@@ -524,13 +524,20 @@ input, select, textarea {
   background: transparent;
   border: none;
   outline: none;
+  padding: 0.25rem 0;
   color: var(--clr-on-surface);
   font-family: var(--font-body);
   font-size: 1rem;
+  min-width: 0;
 }
 
 .search-input::placeholder {
   color: var(--clr-on-surface-variant);
+}
+
+.search-box:focus-within {
+  border-color: var(--clr-primary);
+  box-shadow: 0 0 0 2px rgba(255, 193, 116, 0.25);
 }
 
 .search-loading {
