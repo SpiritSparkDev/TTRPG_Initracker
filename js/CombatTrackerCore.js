@@ -116,6 +116,9 @@ export class CombatTrackerCore {
       // Restore monsterData reference markers — actual data reloaded on demand
       monsterData: c.monsterData ?? null,
       isExpanded: c.isExpanded ?? false,
+      isGroup: c.isGroup ?? false,
+      groupCount: Number(c.groupCount) || 1,
+      hpPools: Array.isArray(c.hpPools) ? c.hpPools.map(n => Number(n) || 0) : null,
     }));
     this.round = data.round ?? 0;
     this.activeIndex = data.activeIndex ?? -1;
@@ -135,24 +138,37 @@ export class CombatTrackerCore {
   addCombatant(partial) {
     const baseName = partial.nameBase || partial.name || 'Unbekannt';
     const name = this._resolveDisplayName(baseName);
+    const initialHp = Number(partial.hp) || 0;
+    const initialMaxHp = Number(partial.maxHp ?? partial.hp) || 0;
+    const isGroup = Boolean(partial.isGroup);
+    const groupCount = Math.max(1, Number(partial.groupCount) || 1);
+    const hpPools = isGroup
+      ? (Array.isArray(partial.hpPools) && partial.hpPools.length > 0
+          ? partial.hpPools.map(n => Math.max(0, Number(n) || 0))
+          : Array.from({ length: groupCount }, () => initialHp))
+      : null;
 
     const combatant = {
       id: crypto.randomUUID(),
       nameBase: baseName,
       name,
       initiative: Number(partial.initiative) || 0,
-      hp: Number(partial.hp) || 0,
-      maxHp: Number(partial.maxHp ?? partial.hp) || 0,
+      hp: isGroup ? hpPools.reduce((sum, val) => sum + val, 0) : initialHp,
+      maxHp: isGroup ? (initialMaxHp * groupCount) : initialMaxHp,
       ac: Number(partial.ac) || 10,
       passivePerception: Number(partial.passivePerception) || 10,
       isPC: Boolean(partial.isPC),
+      isGroup,
+      groupCount,
+      hpPools,
       monsterIndex: partial.monsterIndex ?? null,
       monsterData: partial.monsterData ?? null,
       isExpanded: false,
     };
 
     this.combatants.push(combatant);
-    this.sortByInitiative();
+    // Keep insertion order before combat starts; only auto-sort in active combat.
+    if (this.isCombatActive) this.sortByInitiative();
 
     // If combat is already running, the activeIndex points to the same combatant
     // (sort may have shifted positions)
@@ -186,10 +202,36 @@ export class CombatTrackerCore {
   updateCombatant(id, patch) {
     const combatant = this.combatants.find(c => c.id === id);
     if (!combatant) return;
+
+    if (combatant.isGroup && Array.isArray(combatant.hpPools) && 'hp' in patch && !('hpPools' in patch)) {
+      const requestedHp = Math.max(0, Number(patch.hp) || 0);
+      const perPoolCap = Math.max(0, Math.floor((Number(combatant.maxHp) || 0) / Math.max(1, combatant.groupCount || 1)));
+      let remaining = requestedHp;
+      const nextPools = [];
+      for (let i = 0; i < combatant.hpPools.length; i++) {
+        const val = Math.max(0, Math.min(perPoolCap, remaining));
+        nextPools.push(val);
+        remaining -= val;
+      }
+      patch.hpPools = nextPools;
+    }
+
     Object.assign(combatant, patch);
 
-    // Re-sort only if initiative changed
-    if ('initiative' in patch) this.sortByInitiative();
+    if (combatant.isGroup && Array.isArray(combatant.hpPools)) {
+      combatant.hpPools = combatant.hpPools.map(n => Math.max(0, Number(n) || 0));
+      combatant.groupCount = Math.max(1, combatant.hpPools.length);
+      combatant.hp = combatant.hpPools.reduce((sum, val) => sum + val, 0);
+      const maxPerUnit = Math.max(0, Math.floor((Number(combatant.maxHp) || 0) / combatant.groupCount));
+      combatant.maxHp = Math.max(combatant.hp, maxPerUnit * combatant.groupCount);
+    } else {
+      combatant.hp = Math.max(0, Number(combatant.hp) || 0);
+      combatant.maxHp = Math.max(0, Number(combatant.maxHp) || 0);
+      if (combatant.hp > combatant.maxHp) combatant.hp = combatant.maxHp;
+    }
+
+    // Initiative edits should reorder only during active combat.
+    if (this.isCombatActive && 'initiative' in patch) this.sortByInitiative();
 
     this._save();
     this._notify();
@@ -240,6 +282,8 @@ export class CombatTrackerCore {
    */
   startCombat() {
     if (this.combatants.length === 0) return;
+    // First ordering happens when combat starts.
+    this.sortByInitiative();
     this.round = 1;
     this.activeIndex = 0;
     this.isCombatActive = true;
@@ -268,6 +312,18 @@ export class CombatTrackerCore {
    * Analogous to Foundry's Combat#endCombat().
    */
   endCombat() {
+    this.round = 0;
+    this.activeIndex = -1;
+    this.isCombatActive = false;
+    this._save();
+    this._notify();
+  }
+
+  /**
+   * Ends combat and removes all non-PC combatants (monsters + NPCs).
+   */
+  endCombatAndRemoveMonsters() {
+    this.combatants = this.combatants.filter(c => c.isPC);
     this.round = 0;
     this.activeIndex = -1;
     this.isCombatActive = false;

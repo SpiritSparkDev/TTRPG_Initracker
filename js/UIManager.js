@@ -20,6 +20,7 @@ export class UIManager {
     this.exportMgr = exportMgr;
 
     this._searchDebounceTimer = null;
+    this._monsterPreviewData = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -40,6 +41,7 @@ export class UIManager {
         this.core.reset();
       }
     });
+    this._on('end-combat-btn', 'click', () => this._endCombatAndClearMonsters());
 
     // -- Add player / custom entry --
     this._on('add-player-btn', 'click', () => this._openModal(true));
@@ -53,6 +55,28 @@ export class UIManager {
     this._on('manual-form', 'submit', (e) => {
       e.preventDefault();
       this._handleManualSubmit();
+    });
+
+    // -- HP modal --
+    this._on('hp-modal-close', 'click', () => this._closeHpModal());
+    this._on('hp-modal-cancel', 'click', () => this._closeHpModal());
+    this._on('hp-modal', 'click', (e) => {
+      if (e.target.id === 'hp-modal') this._closeHpModal();
+    });
+    this._on('hp-modal-form', 'submit', (e) => {
+      e.preventDefault();
+      this._submitHpModal();
+    });
+
+    // -- Monster add preview modal --
+    this._on('monster-add-close', 'click', () => this._closeMonsterAddModal());
+    this._on('monster-add-cancel', 'click', () => this._closeMonsterAddModal());
+    this._on('monster-add-modal', 'click', (e) => {
+      if (e.target.id === 'monster-add-modal') this._closeMonsterAddModal();
+    });
+    this._on('monster-add-form', 'submit', (e) => {
+      e.preventDefault();
+      this._submitMonsterAddModal();
     });
 
     // -- Settings modal --
@@ -86,10 +110,6 @@ export class UIManager {
     this._onDelegate('initiative-list', 'click', '[data-action]', (e, el) => {
       this._handleTableAction(el.dataset.action, el.dataset.id, el.dataset);
     });
-    this._onDelegate('initiative-list', 'change', '[data-action="hp-input"]', (e, el) => {
-      const val = Math.max(0, Math.min(Number(el.value), Number(el.dataset.max)));
-      this.core.updateCombatant(el.dataset.id, { hp: val });
-    });
     this._onDelegate('initiative-list', 'change', '[data-action="initiative-input"]', (e, el) => {
       const val = parseInt(el.value);
       if (!isNaN(val)) this.core.updateCombatant(el.dataset.id, { initiative: val });
@@ -99,6 +119,14 @@ export class UIManager {
     this._on('export-pcs-btn', 'click', () => this.exportMgr.exportPCs(this.core.getFullState()));
     this._on('export-all-btn', 'click', () => this.exportMgr.exportAll(this.core.getFullState()));
     this._on('import-file-input', 'change', (e) => this._handleImport(e.target.files[0]));
+
+    // -- Quick save/load (top bar) --
+    this._on('save-json-btn', 'click', () => this.exportMgr.exportAll(this.core.getFullState()));
+    this._on('load-json-btn', 'click', () => {
+      const desktopInput = document.getElementById('import-file-input-desktop');
+      const mobileInput = document.getElementById('import-file-input');
+      (desktopInput || mobileInput)?.click();
+    });
 
     // -- Export / Import (desktop footer) --
     this._on('export-pcs-btn-desktop', 'click', () => this.exportMgr.exportPCs(this.core.getFullState()));
@@ -161,13 +189,22 @@ export class UIManager {
 
   _renderStartButton(state) {
     const btn = document.getElementById('start-combat-btn');
+    const endBtn = document.getElementById('end-combat-btn');
     if (!btn) return;
     if (state.isCombatActive) {
       btn.disabled = true;
       btn.classList.add('btn--disabled');
+      if (endBtn) {
+        endBtn.disabled = false;
+        endBtn.classList.remove('btn--disabled');
+      }
     } else {
       btn.disabled = false;
       btn.classList.remove('btn--disabled');
+      if (endBtn) {
+        endBtn.disabled = state.combatants.length === 0;
+        endBtn.classList.toggle('btn--disabled', state.combatants.length === 0);
+      }
     }
   }
 
@@ -188,6 +225,7 @@ export class UIManager {
 
   _buildRow(c, idx, state) {
     const isActive = state.isCombatActive && idx === state.activeIndex;
+    const isDead = c.hp <= 0;
     const hpPct = c.maxHp > 0 ? Math.round((c.hp / c.maxHp) * 100) : 0;
     const hpBarClass = hpPct > 50
       ? 'hp-bar-fill--high'
@@ -195,8 +233,14 @@ export class UIManager {
         ? 'hp-bar-fill--mid'
         : 'hp-bar-fill--low';
     const rowNameClass = c.isPC ? 'row-name--pc' : 'row-name--monster';
-    const rowClass = isActive ? 'initiative-row initiative-row--active' : 'initiative-row';
-    const typeLabel = c.isPC ? 'SC' : (c.monsterIndex ? 'Monster' : 'NSC');
+    const rowClass = [
+      'initiative-row',
+      isActive ? 'initiative-row--active' : '',
+      isDead ? 'initiative-row--dead' : '',
+    ].filter(Boolean).join(' ');
+    const typeLabel = c.isGroup
+      ? `Gruppe x${c.groupCount}`
+      : (c.isPC ? 'SC' : (c.monsterIndex ? 'Monster' : 'NSC'));
 
     const hasRealMonsterData = c.monsterData && !c.monsterData._cached;
     const expandedRow = (c.isExpanded && hasRealMonsterData)
@@ -226,15 +270,16 @@ export class UIManager {
                 class="hp-btn hp-btn--minus">−</button>
               <input
                 type="number"
-                data-action="hp-input"
+                data-action="open-hp-editor"
                 data-id="${c.id}"
                 data-max="${c.maxHp}"
                 value="${c.hp}"
                 min="0"
                 max="${c.maxHp}"
+                readonly
                 class="hp-input"
               />
-              <span class="hp-max">/ ${c.maxHp}</span>
+              <span class="hp-max">/ ${c.maxHp}${c.isGroup ? ` (Pools: ${c.groupCount})` : ''}</span>
               <button data-action="hp-plus" data-id="${c.id}" data-delta="1"
                 class="hp-btn hp-btn--plus">+</button>
             </div>
@@ -261,6 +306,16 @@ export class UIManager {
               class="action-btn action-btn--danger" title="Entfernen">
               <span class="material-symbols-outlined">delete</span>
             </button>
+            ${isDead ? `
+            <button data-action="revive" data-id="${c.id}"
+              class="action-btn" title="Wiederbeleben">
+              <span class="material-symbols-outlined">favorite</span>
+            </button>
+            <button data-action="remove-dead" data-id="${c.id}"
+              class="action-btn action-btn--danger" title="Endgültig entfernen">
+              <span class="material-symbols-outlined">delete_forever</span>
+            </button>
+            ` : ''}
           </div>
         </td>
       </tr>
@@ -528,15 +583,12 @@ export class UIManager {
 
   async _addMonsterByIndex(index) {
     this._hideSearchResults();
-    const searchInput = document.getElementById('monster-search');
-    if (searchInput) searchInput.value = '';
     const loadingIcon = document.getElementById('search-loading');
     loadingIcon?.classList.remove('hidden');
     try {
       const data = await this.adapter.fetchMonsterDetails(index);
       if (!data) return;
-      const partial = this.adapter.buildCombatantFromMonster(data, this.core.settings);
-      this.core.addCombatant(partial);
+      this._openMonsterAddModal(data);
     } finally {
       loadingIcon?.classList.add('hidden');
     }
@@ -551,11 +603,26 @@ export class UIManager {
       case 'remove':
         this.core.removeCombatant(id);
         break;
+      case 'remove-dead':
+        this.core.removeCombatant(id);
+        break;
+      case 'revive': {
+        const c = this.core.combatants.find(x => x.id === id);
+        if (!c) break;
+        const reviveTo = c.isGroup
+          ? c.hpPools.reduce((sum, val) => sum + (val > 0 ? val : 1), 0)
+          : Math.max(1, Math.min(c.maxHp || 1, Math.ceil((c.maxHp || 1) * 0.5)));
+        this.core.updateCombatant(id, { hp: reviveTo });
+        break;
+      }
       case 'expand':
         this._handleExpand(id);
         break;
       case 'show-details':
         this._handleShowDetails(id);
+        break;
+      case 'open-hp-editor':
+        this._openHpModal(id);
         break;
       case 'hp-minus': {
         const c = this.core.combatants.find(x => x.id === id);
@@ -568,6 +635,171 @@ export class UIManager {
         break;
       }
     }
+  }
+
+  _openHpModal(id) {
+    const c = this.core.combatants.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('hp-modal-id').value = c.id;
+    document.getElementById('hp-damage').value = '0';
+    document.getElementById('hp-heal').value = '0';
+    document.getElementById('hp-current').value = String(c.hp);
+    document.getElementById('hp-max').value = String(c.maxHp);
+    document.getElementById('hp-modal-error')?.classList.add('hidden');
+    const poolsWrap = document.getElementById('hp-pools-wrap');
+    const poolsGrid = document.getElementById('hp-pools-grid');
+    if (c.isGroup && Array.isArray(c.hpPools) && poolsWrap && poolsGrid) {
+      poolsWrap.classList.remove('hidden');
+      poolsGrid.innerHTML = c.hpPools.map((pool, idx) => `
+        <div class="hp-pool-item">
+          <label class="hp-pool-item__label" for="hp-pool-${idx}">Pool ${idx + 1}</label>
+          <input id="hp-pool-${idx}" type="number" min="0" value="${pool}" class="form-input form-input--mono" data-pool-index="${idx}" />
+        </div>
+      `).join('');
+    } else if (poolsWrap && poolsGrid) {
+      poolsWrap.classList.add('hidden');
+      poolsGrid.innerHTML = '';
+    }
+    document.getElementById('hp-modal')?.classList.add('is-open');
+    document.getElementById('hp-damage')?.focus();
+  }
+
+  _closeHpModal() {
+    document.getElementById('hp-modal')?.classList.remove('is-open');
+  }
+
+  _submitHpModal() {
+    const id = document.getElementById('hp-modal-id')?.value;
+    const c = this.core.combatants.find(x => x.id === id);
+    if (!c) return;
+
+    const damage = Math.max(0, Number(document.getElementById('hp-damage')?.value) || 0);
+    const heal = Math.max(0, Number(document.getElementById('hp-heal')?.value) || 0);
+    const current = Math.max(0, Number(document.getElementById('hp-current')?.value) || 0);
+    const max = Math.max(0, Number(document.getElementById('hp-max')?.value) || 0);
+    const errorEl = document.getElementById('hp-modal-error');
+    const poolInputs = Array.from(document.querySelectorAll('#hp-pools-grid [data-pool-index]'));
+
+    if (max <= 0) {
+      if (errorEl) {
+        errorEl.textContent = 'Maximale TP müssen größer als 0 sein.';
+        errorEl.classList.remove('hidden');
+      }
+      return;
+    }
+
+    let newHp = Math.min(current, max);
+    newHp = Math.max(0, newHp - damage + heal);
+    newHp = Math.min(newHp, max);
+
+    if (c.isGroup && poolInputs.length > 0) {
+      const hpPools = poolInputs.map((input) => Math.max(0, Number(input.value) || 0));
+      const totalFromPools = hpPools.reduce((sum, val) => sum + val, 0);
+      let adjustedTotal = Math.max(0, totalFromPools - damage + heal);
+      const perPoolCap = Math.max(1, Math.floor(max / Math.max(1, hpPools.length)));
+      const redistributed = hpPools.map(() => {
+        const val = Math.min(perPoolCap, adjustedTotal);
+        adjustedTotal -= val;
+        return val;
+      });
+      this.core.updateCombatant(c.id, {
+        hpPools: redistributed,
+        groupCount: redistributed.length,
+        maxHp: Math.max(max, redistributed.reduce((sum, val) => sum + val, 0)),
+      });
+    } else {
+      this.core.updateCombatant(c.id, { hp: newHp, maxHp: max });
+    }
+    this._closeHpModal();
+  }
+
+  _openMonsterAddModal(monsterData) {
+    this._monsterPreviewData = monsterData;
+    const partial = this.adapter.buildCombatantFromMonster(monsterData, this.core.settings);
+
+    document.getElementById('monster-add-index').value = monsterData.index;
+    document.getElementById('monster-add-title').textContent = `${monsterData.name} vorbereiten`;
+    document.getElementById('monster-add-name').value = partial.nameBase;
+    document.getElementById('monster-add-count').value = '1';
+    document.getElementById('monster-add-init').value = String(partial.initiative);
+    document.getElementById('monster-add-hp').value = String(partial.maxHp);
+    document.getElementById('monster-add-ac').value = String(partial.ac);
+    document.getElementById('monster-add-pp').value = String(partial.passivePerception);
+    document.getElementById('monster-add-group').checked = false;
+    document.getElementById('monster-add-error')?.classList.add('hidden');
+
+    const abilities = [
+      ['STR', monsterData.strength], ['DEX', monsterData.dexterity], ['CON', monsterData.constitution],
+      ['INT', monsterData.intelligence], ['WIS', monsterData.wisdom], ['CHA', monsterData.charisma],
+    ];
+    document.getElementById('monster-add-abilities').innerHTML = abilities.map(([label, val]) => `
+      <div class="ability-card">
+        <div class="ability-card__label">${label}</div>
+        <div class="ability-card__score">${val}</div>
+      </div>
+    `).join('');
+
+    const special = (monsterData.special_abilities || []).map(a =>
+      `<p><span class="stat-name">${this._esc(a.name)}.</span> <span class="stat-desc">${this._esc(a.desc)}</span></p>`
+    ).join('') || '<p class="stat-desc">—</p>';
+    const actions = (monsterData.actions || []).map(a =>
+      `<p><span class="stat-name">${this._esc(a.name)}.</span> <span class="stat-desc">${this._esc(a.desc)}</span></p>`
+    ).join('') || '<p class="stat-desc">—</p>';
+
+    document.getElementById('monster-add-special').innerHTML = special;
+    document.getElementById('monster-add-actions').innerHTML = actions;
+    document.getElementById('monster-add-modal')?.classList.add('is-open');
+    document.getElementById('monster-add-count')?.focus();
+  }
+
+  _closeMonsterAddModal() {
+    document.getElementById('monster-add-modal')?.classList.remove('is-open');
+    this._monsterPreviewData = null;
+  }
+
+  _submitMonsterAddModal() {
+    const data = this._monsterPreviewData;
+    if (!data) return;
+
+    const count = Math.max(1, Number(document.getElementById('monster-add-count')?.value) || 1);
+    const isGroup = document.getElementById('monster-add-group')?.checked ?? false;
+    const hpPerUnit = Math.max(0, Number(document.getElementById('monster-add-hp')?.value) || 0);
+    const basePayload = {
+      nameBase: document.getElementById('monster-add-name')?.value.trim() || data.name,
+      initiative: Number(document.getElementById('monster-add-init')?.value) || 0,
+      hp: hpPerUnit,
+      maxHp: hpPerUnit,
+      ac: Number(document.getElementById('monster-add-ac')?.value) || 10,
+      passivePerception: Number(document.getElementById('monster-add-pp')?.value) || 10,
+      isPC: false,
+      monsterIndex: data.index,
+      monsterData: data,
+      isExpanded: false,
+    };
+
+    if (isGroup && count > 1) {
+      this.core.addCombatant({
+        ...basePayload,
+        isGroup: true,
+        groupCount: count,
+        hpPools: Array.from({ length: count }, () => hpPerUnit),
+      });
+    } else {
+      for (let i = 0; i < count; i++) {
+        this.core.addCombatant({ ...basePayload, isGroup: false, groupCount: 1, hpPools: null });
+      }
+    }
+
+    const searchInput = document.getElementById('monster-search');
+    if (searchInput) searchInput.value = '';
+    this._closeMonsterAddModal();
+  }
+
+  _endCombatAndClearMonsters() {
+    if (this.core.combatants.length === 0) return;
+    if (!confirm('Kampf beenden und alle Monster/NSCs aus der Initiative entfernen?')) return;
+    this.core.endCombatAndRemoveMonsters();
+    this._closeDrawer();
   }
 
   // ---------------------------------------------------------------------------

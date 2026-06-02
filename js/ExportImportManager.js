@@ -65,14 +65,25 @@ export class ExportImportManager {
    */
   importFile(file, core) {
     return new Promise((resolve, reject) => {
-      if (!file || file.type !== 'application/json') {
+      if (!file) {
+        reject(new Error('Keine Datei ausgewählt.'));
+        return;
+      }
+
+      const fileName = String(file.name || '').toLowerCase();
+      const mimeType = String(file.type || '').toLowerCase();
+      const looksLikeJson = fileName.endsWith('.json') || mimeType.includes('json') || mimeType === '';
+
+      if (!looksLikeJson) {
         reject(new Error('Ungültige Datei. Bitte eine .json-Datei hochladen.'));
         return;
       }
+
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const data = JSON.parse(e.target.result);
+          const raw = String(e.target.result || '').replace(/^\uFEFF/, '');
+          const data = JSON.parse(raw);
           this._validateImport(data);
           core.loadFromExport(data);
           resolve();
@@ -110,7 +121,10 @@ export class ExportImportManager {
     const a = document.createElement('a');
     a.href = url;
     a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     // Revoke after a short delay to allow the download to start
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }

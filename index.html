@@ -31,7 +31,12 @@
         <span class="material-symbols-outlined round-counter__icon">cycle</span>
         Runde <span id="round-display" class="round-counter__value">–</span>
       </div>
+      <div class="top-bar__file-actions">
+        <button id="save-json-btn" class="btn btn--ghost">Speichern JSON</button>
+        <button id="load-json-btn" class="btn btn--ghost">Laden JSON</button>
+      </div>
       <button id="reset-btn" class="btn btn--ghost">Zurücksetzen</button>
+      <button id="end-combat-btn" class="btn btn--ghost">Kampf beenden</button>
       <button id="next-turn-btn" class="btn btn--primary">Nächster Zug</button>
     </div>
   </nav>
@@ -308,6 +313,119 @@
       <div class="settings-footer">
         <button id="settings-save" class="btn--save">Speichern</button>
       </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       HP EDIT MODAL
+       ========================================================================= -->
+  <div id="hp-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal__header">
+        <h3 class="modal__title">Trefferpunkte anpassen</h3>
+        <button id="hp-modal-close" class="modal__close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form id="hp-modal-form" class="modal__form" novalidate>
+        <input type="hidden" id="hp-modal-id" />
+        <div class="form-grid-2">
+          <div class="form-field">
+            <label class="form-label" for="hp-damage">Schaden (abziehen)</label>
+            <input id="hp-damage" type="number" min="0" value="0" class="form-input form-input--mono" />
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="hp-heal">Heilung (addieren)</label>
+            <input id="hp-heal" type="number" min="0" value="0" class="form-input form-input--mono" />
+          </div>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-field">
+            <label class="form-label" for="hp-current">Aktuelle TP</label>
+            <input id="hp-current" type="number" min="0" class="form-input form-input--mono" />
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="hp-max">Maximale TP</label>
+            <input id="hp-max" type="number" min="0" class="form-input form-input--mono" />
+          </div>
+        </div>
+        <div id="hp-pools-wrap" class="hidden">
+          <p class="settings-group__label">TP-Pools der Gruppe</p>
+          <div id="hp-pools-grid" class="hp-pools-grid"></div>
+        </div>
+        <div id="hp-modal-error" class="form-error hidden"></div>
+        <div class="modal__actions">
+          <button type="button" id="hp-modal-cancel" class="btn--cancel">Abbrechen</button>
+          <button type="submit" class="btn--submit">Anwenden</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MONSTER PREVIEW & ADD MODAL
+       ========================================================================= -->
+  <div id="monster-add-modal" class="modal-overlay">
+    <div class="modal modal--wide">
+      <div class="modal__header">
+        <h3 id="monster-add-title" class="modal__title">Monster hinzufügen</h3>
+        <button id="monster-add-close" class="modal__close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form id="monster-add-form" class="modal__form" novalidate>
+        <input type="hidden" id="monster-add-index" />
+        <div class="form-grid-2">
+          <div class="form-field">
+            <label class="form-label" for="monster-add-name">Name</label>
+            <input id="monster-add-name" type="text" class="form-input" />
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="monster-add-count">Anzahl</label>
+            <input id="monster-add-count" type="number" min="1" value="1" class="form-input form-input--mono" />
+          </div>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-field">
+            <label class="form-label" for="monster-add-init">Initiative</label>
+            <input id="monster-add-init" type="number" class="form-input form-input--mono" />
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="monster-add-hp">TP pro Monster</label>
+            <input id="monster-add-hp" type="number" min="0" class="form-input form-input--mono" />
+          </div>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-field">
+            <label class="form-label" for="monster-add-ac">Rüstungsklasse</label>
+            <input id="monster-add-ac" type="number" min="0" class="form-input form-input--mono" />
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="monster-add-pp">Passive Wahrnehmung</label>
+            <input id="monster-add-pp" type="number" min="0" class="form-input form-input--mono" />
+          </div>
+        </div>
+        <div class="form-checkbox-row">
+          <input id="monster-add-group" type="checkbox" class="form-checkbox" />
+          <label for="monster-add-group" class="form-checkbox-label">Als Gruppe (gemeinsame Initiative, mehrere TP-Pools)</label>
+        </div>
+        <div id="monster-add-abilities" class="ability-grid"></div>
+        <div class="expanded-sections">
+          <div>
+            <p class="expanded-section__title">Besondere Fähigkeiten</p>
+            <div id="monster-add-special" class="expanded-section__body"></div>
+          </div>
+          <div>
+            <p class="expanded-section__title">Aktionen</p>
+            <div id="monster-add-actions" class="expanded-section__body"></div>
+          </div>
+        </div>
+        <div id="monster-add-error" class="form-error hidden"></div>
+        <div class="modal__actions">
+          <button type="button" id="monster-add-cancel" class="btn--cancel">Abbrechen</button>
+          <button type="submit" class="btn--submit">Zur Initiative hinzufügen</button>
+        </div>
+      </form>
     </div>
   </div>
 
