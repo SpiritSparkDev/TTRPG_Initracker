@@ -68,7 +68,10 @@ export class UIManager {
     // -- Monster search --
     this._on('monster-search', 'input', (e) => this._handleSearchInput(e.target.value));
     this._on('monster-search', 'keydown', (e) => {
-      if (e.key === 'Escape') this._hideSearchResults();
+      if (e.key === 'Escape') {
+        this._hideSearchResults();
+        e.target.value = '';
+      }
     });
     document.addEventListener('click', (e) => {
       if (!e.target.closest('#monster-search') && !e.target.closest('#search-results')) {
@@ -161,10 +164,10 @@ export class UIManager {
     if (!btn) return;
     if (state.isCombatActive) {
       btn.disabled = true;
-      btn.classList.add('opacity-40', 'cursor-not-allowed');
+      btn.classList.add('btn--disabled');
     } else {
       btn.disabled = false;
-      btn.classList.remove('opacity-40', 'cursor-not-allowed');
+      btn.classList.remove('btn--disabled');
     }
   }
 
@@ -186,17 +189,13 @@ export class UIManager {
   _buildRow(c, idx, state) {
     const isActive = state.isCombatActive && idx === state.activeIndex;
     const hpPct = c.maxHp > 0 ? Math.round((c.hp / c.maxHp) * 100) : 0;
-    const hpBarColor = hpPct > 50
-      ? 'bg-primary'
+    const hpBarClass = hpPct > 50
+      ? 'hp-bar-fill--high'
       : hpPct > 25
-        ? 'bg-secondary-container'
-        : 'bg-error-container hp-low';
-    const sideBorder = c.isPC
-      ? 'border-l-4 border-tertiary-container'
-      : 'border-l-4 border-error-container';
-    const activeClass = isActive
-      ? 'active-glow bg-surface-container-highest ring-1 ring-primary'
-      : 'hover:bg-surface-container-highest/50';
+        ? 'hp-bar-fill--mid'
+        : 'hp-bar-fill--low';
+    const rowNameClass = c.isPC ? 'row-name--pc' : 'row-name--monster';
+    const rowClass = isActive ? 'initiative-row initiative-row--active' : 'initiative-row';
     const typeLabel = c.isPC ? 'SC' : (c.monsterIndex ? 'Monster' : 'NSC');
 
     const hasRealMonsterData = c.monsterData && !c.monsterData._cached;
@@ -205,26 +204,26 @@ export class UIManager {
       : '';
 
     return `
-      <tr class="transition-all ${activeClass}">
-        <td class="px-4 py-3 text-center w-10">
-          ${isActive ? '<span class="material-symbols-outlined text-primary" style="font-variation-settings:\'FILL\' 1">chevron_right</span>' : ''}
+      <tr class="${rowClass}">
+        <td class="td-indicator">
+          ${isActive ? '<span class="material-symbols-outlined row-turn-icon">chevron_right</span>' : ''}
         </td>
-        <td class="px-4 py-3 ${sideBorder}">
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="font-bold text-on-surface">${this._esc(c.name)}</span>
-            <span class="text-[10px] px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-mono uppercase">${typeLabel}</span>
+        <td class="row-name ${rowNameClass}">
+          <div class="name-wrap">
+            <span class="name-text">${this._esc(c.name)}</span>
+            <span class="type-badge">${typeLabel}</span>
           </div>
         </td>
-        <td class="px-4 py-3 text-center">
+        <td class="td-initiative">
           <input type="number" data-action="initiative-input" data-id="${c.id}"
             value="${c.initiative}"
-            class="w-14 bg-transparent border-b border-outline-variant text-center font-mono text-xl font-bold text-primary focus:border-primary outline-none" />
+            class="initiative-input" />
         </td>
-        <td class="px-4 py-3">
-          <div class="flex flex-col gap-1">
-            <div class="flex items-center gap-1">
+        <td class="td-hp">
+          <div class="hp-controls">
+            <div class="hp-row">
               <button data-action="hp-minus" data-id="${c.id}" data-delta="1"
-                class="w-6 h-6 flex items-center justify-center rounded bg-surface-container text-on-surface-variant hover:text-secondary hover:bg-surface-container-highest font-bold text-sm transition-colors">−</button>
+                class="hp-btn hp-btn--minus">−</button>
               <input
                 type="number"
                 data-action="hp-input"
@@ -233,34 +232,34 @@ export class UIManager {
                 value="${c.hp}"
                 min="0"
                 max="${c.maxHp}"
-                class="hp-input w-12 bg-surface-container-lowest border border-outline-variant rounded text-center font-mono text-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none px-1 py-0.5"
+                class="hp-input"
               />
-              <span class="text-on-surface-variant font-mono text-xs">/ ${c.maxHp}</span>
+              <span class="hp-max">/ ${c.maxHp}</span>
               <button data-action="hp-plus" data-id="${c.id}" data-delta="1"
-                class="w-6 h-6 flex items-center justify-center rounded bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-highest font-bold text-sm transition-colors">+</button>
+                class="hp-btn hp-btn--plus">+</button>
             </div>
-            <div class="w-full bg-surface-container-lowest h-1.5 rounded-full overflow-hidden">
-              <div class="h-full ${hpBarColor} transition-all" style="width:${hpPct}%"></div>
+            <div class="hp-bar-track">
+              <div class="hp-bar-fill ${hpBarClass}" style="width:${hpPct}%"></div>
             </div>
           </div>
         </td>
-        <td class="px-4 py-3 text-center font-mono text-on-surface-variant">${c.ac}</td>
-        <td class="px-4 py-3 text-center font-mono text-on-surface-variant">${c.passivePerception}</td>
-        <td class="px-4 py-3 text-right">
-          <div class="flex items-center justify-end gap-1">
+        <td class="td-stat">${c.ac}</td>
+        <td class="td-stat">${c.passivePerception}</td>
+        <td class="td-actions">
+          <div class="action-btns">
             ${c.monsterIndex ? `
             <button data-action="show-details" data-id="${c.id}"
-              class="p-1 rounded text-on-surface-variant hover:text-primary transition-colors" title="Details">
-              <span class="material-symbols-outlined text-base">info</span>
+              class="action-btn" title="Details">
+              <span class="material-symbols-outlined">info</span>
             </button>
             <button data-action="expand" data-id="${c.id}"
-              class="p-1 rounded text-on-surface-variant hover:text-primary transition-colors" title="${c.isExpanded ? 'Einklappen' : 'Aufklappen'}">
-              <span class="material-symbols-outlined text-base">${c.isExpanded ? 'expand_less' : 'expand_more'}</span>
+              class="action-btn" title="${c.isExpanded ? 'Einklappen' : 'Aufklappen'}">
+              <span class="material-symbols-outlined">${c.isExpanded ? 'expand_less' : 'expand_more'}</span>
             </button>
             ` : ''}
             <button data-action="remove" data-id="${c.id}"
-              class="p-1 rounded text-on-surface-variant hover:text-error transition-colors" title="Entfernen">
-              <span class="material-symbols-outlined text-base">delete</span>
+              class="action-btn action-btn--danger" title="Entfernen">
+              <span class="material-symbols-outlined">delete</span>
             </button>
           </div>
         </td>
@@ -276,32 +275,32 @@ export class UIManager {
       ['INT', m.intelligence], ['WIS', m.wisdom], ['CHA', m.charisma],
     ];
     const abilityGrid = abilities.map(([label, val]) =>
-      `<div class="bg-surface-container rounded p-2 text-center">
-        <div class="font-mono text-[10px] text-on-surface-variant uppercase">${label}</div>
-        <div class="font-mono font-bold text-on-surface">${val}</div>
+      `<div class="ability-card">
+        <div class="ability-card__label">${label}</div>
+        <div class="ability-card__score">${val}</div>
       </div>`
     ).join('');
 
     const specialAbilities = (m.special_abilities || []).map(a =>
-      `<p><span class="font-bold text-on-surface">${this._esc(a.name)}.</span> <span class="text-on-surface-variant">${this._esc(a.desc)}</span></p>`
-    ).join('') || '<p class="text-on-surface-variant">—</p>';
+      `<p><span class="stat-name">${this._esc(a.name)}.</span> <span class="stat-desc">${this._esc(a.desc)}</span></p>`
+    ).join('') || '<p class="stat-desc">—</p>';
 
     const actions = (m.actions || []).map(a =>
-      `<p><span class="font-bold text-on-surface">${this._esc(a.name)}.</span> <span class="text-on-surface-variant">${this._esc(a.desc)}</span></p>`
-    ).join('') || '<p class="text-on-surface-variant">—</p>';
+      `<p><span class="stat-name">${this._esc(a.name)}.</span> <span class="stat-desc">${this._esc(a.desc)}</span></p>`
+    ).join('') || '<p class="stat-desc">—</p>';
 
     return `
-      <tr class="monster-detail-row bg-surface-container-lowest">
-        <td colspan="7" class="px-6 py-4">
-          <div class="grid grid-cols-6 gap-2 mb-4 font-body text-sm">${abilityGrid}</div>
-          <div class="grid md:grid-cols-2 gap-4 font-body text-sm">
+      <tr class="expanded-row">
+        <td colspan="7">
+          <div class="ability-grid">${abilityGrid}</div>
+          <div class="expanded-sections">
             <div>
-              <p class="font-mono text-[10px] uppercase tracking-widest text-primary mb-2">Besondere Fähigkeiten</p>
-              <div class="space-y-2">${specialAbilities}</div>
+              <p class="expanded-section__title">Besondere Fähigkeiten</p>
+              <div class="expanded-section__body">${specialAbilities}</div>
             </div>
             <div>
-              <p class="font-mono text-[10px] uppercase tracking-widest text-primary mb-2">Aktionen</p>
-              <div class="space-y-2">${actions}</div>
+              <p class="expanded-section__title">Aktionen</p>
+              <div class="expanded-section__body">${actions}</div>
             </div>
           </div>
         </td>
@@ -327,33 +326,39 @@ export class UIManager {
         ['INT', m.intelligence], ['WIS', m.wisdom], ['CHA', m.charisma],
       ];
       content.innerHTML = `
-        <div class="grid grid-cols-3 gap-2 mb-4">
+        <div class="drawer-abilities">
           ${abilities.map(([l, v]) => `
-            <div class="bg-surface-container rounded p-2 text-center">
-              <p class="font-mono text-[10px] text-on-surface-variant uppercase">${l}</p>
-              <p class="font-mono font-bold">${v}</p>
-              <p class="font-mono text-[10px] text-primary">${v >= 10 ? '+' : ''}${Math.floor((v - 10) / 2)}</p>
+            <div class="drawer-ability-card">
+              <p class="drawer-ability-card__label">${l}</p>
+              <p class="drawer-ability-card__score">${v}</p>
+              <p class="drawer-ability-card__mod">${v >= 10 ? '+' : ''}${Math.floor((v - 10) / 2)}</p>
             </div>`).join('')}
         </div>
-        <div class="space-y-4 text-sm">
+        <div class="drawer-sections">
           <div>
-            <p class="font-mono text-[10px] uppercase tracking-widest text-primary mb-2">Besondere Fähigkeiten</p>
-            ${(m.special_abilities || []).map(a => `<p class="mb-2"><strong>${this._esc(a.name)}.</strong> ${this._esc(a.desc)}</p>`).join('') || '<p class="text-on-surface-variant">—</p>'}
+            <p class="drawer-section__title">Besondere Fähigkeiten</p>
+            <div class="drawer-section__body">
+              ${(m.special_abilities || []).map(a => `<p><strong>${this._esc(a.name)}.</strong> ${this._esc(a.desc)}</p>`).join('') || '<p class="stat-desc">—</p>'}
+            </div>
           </div>
           <div>
-            <p class="font-mono text-[10px] uppercase tracking-widest text-primary mb-2">Aktionen</p>
-            ${(m.actions || []).map(a => `<p class="mb-2"><strong>${this._esc(a.name)}.</strong> ${this._esc(a.desc)}</p>`).join('') || '<p class="text-on-surface-variant">—</p>'}
+            <p class="drawer-section__title">Aktionen</p>
+            <div class="drawer-section__body">
+              ${(m.actions || []).map(a => `<p><strong>${this._esc(a.name)}.</strong> ${this._esc(a.desc)}</p>`).join('') || '<p class="stat-desc">—</p>'}
+            </div>
           </div>
           ${m.legendary_actions?.length ? `
           <div>
-            <p class="font-mono text-[10px] uppercase tracking-widest text-primary mb-2">Legendäre Aktionen</p>
-            ${m.legendary_actions.map(a => `<p class="mb-2"><strong>${this._esc(a.name)}.</strong> ${this._esc(a.desc)}</p>`).join('')}
+            <p class="drawer-section__title">Legendäre Aktionen</p>
+            <div class="drawer-section__body">
+              ${m.legendary_actions.map(a => `<p><strong>${this._esc(a.name)}.</strong> ${this._esc(a.desc)}</p>`).join('')}
+            </div>
           </div>` : ''}
         </div>
       `;
     } else {
       content.innerHTML = `
-        <div class="space-y-2 text-sm">
+        <div class="drawer-fallback">
           <p><strong>Initiative:</strong> ${c.initiative}</p>
           <p><strong>Max. TP:</strong> ${c.maxHp}</p>
           <p><strong>Rüstungsklasse:</strong> ${c.ac}</p>
@@ -361,11 +366,11 @@ export class UIManager {
         </div>`;
     }
 
-    document.getElementById('detail-drawer')?.classList.remove('translate-x-full');
+    document.getElementById('detail-drawer')?.classList.remove('drawer--closed');
   }
 
   _closeDrawer() {
-    document.getElementById('detail-drawer')?.classList.add('translate-x-full');
+    document.getElementById('detail-drawer')?.classList.add('drawer--closed');
   }
 
   // ---------------------------------------------------------------------------
@@ -381,15 +386,13 @@ export class UIManager {
     title.textContent = isPC ? 'Spielercharakter hinzufügen' : 'Kombattant hinzufügen';
     pcCheckbox.checked = isPC;
     pcCheckbox.disabled = isPC; // lock it for the player flow
-    overlay.classList.remove('hidden');
-    overlay.classList.add('flex');
+    overlay.classList.add('is-open');
     document.getElementById('m-name')?.focus();
   }
 
   _closeModal() {
     const overlay = document.getElementById('modal-overlay');
-    overlay.classList.add('hidden');
-    overlay.classList.remove('flex');
+    overlay.classList.remove('is-open');
     const pcCheckbox = document.getElementById('m-is-pc');
     if (pcCheckbox) pcCheckbox.disabled = false;
   }
@@ -428,14 +431,12 @@ export class UIManager {
     const radio = document.querySelector(`input[name="naming"][value="${s.namingConvention}"]`);
     if (radio) radio.checked = true;
     const modal = document.getElementById('settings-modal');
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
+    modal.classList.add('is-open');
   }
 
   _closeSettings() {
     const modal = document.getElementById('settings-modal');
-    modal.classList.add('hidden');
-    modal.classList.remove('flex');
+    modal.classList.remove('is-open');
   }
 
   _saveSettings() {
@@ -461,46 +462,74 @@ export class UIManager {
     const loadingIcon = document.getElementById('search-loading');
     loadingIcon?.classList.remove('hidden');
     this._searchDebounceTimer = setTimeout(async () => {
-      const results = await this.adapter.searchMonsters(value, 10);
-      loadingIcon?.classList.add('hidden');
-      this._renderSearchResults(results);
+      try {
+        const results = await this.adapter.searchMonsters(value, 10);
+        loadingIcon?.classList.add('hidden');
+        this._renderSearchResults(results, value);
+      } catch (err) {
+        loadingIcon?.classList.add('hidden');
+        this._renderSearchError(err.message);
+      }
     }, 250);
   }
 
-  _renderSearchResults(results) {
+  _renderSearchResults(results, query = '') {
     const box = document.getElementById('search-results');
     if (!box) return;
     if (results.length === 0) {
-      box.classList.add('hidden');
+      if (query.length >= 3) {
+        box.innerHTML = `<div class="search-no-results">Keine Monster gefunden für „${this._esc(query)}".</div>`;
+        box.classList.remove('hidden');
+      } else {
+        box.classList.add('hidden');
+      }
       return;
     }
     box.innerHTML = results.map(m => `
       <div
         data-action="add-monster"
         data-index="${this._esc(m.index)}"
-        class="px-4 py-3 hover:bg-primary-container hover:text-on-primary-container cursor-pointer transition-colors border-b border-outline-variant last:border-0 font-body text-sm"
+        class="search-result-item"
       >${this._esc(m.name)}</div>
     `).join('');
     box.classList.remove('hidden');
 
-    // One-time listener for search result clicks
+    // Replace click handler each time results are rendered
     box.onclick = (e) => {
       const item = e.target.closest('[data-action="add-monster"]');
       if (item) this._addMonsterByIndex(item.dataset.index);
     };
   }
 
+  _renderSearchError(message) {
+    const box = document.getElementById('search-results');
+    if (!box) return;
+    box.innerHTML = `
+      <div class="search-error">
+        <p class="search-error__title">API nicht erreichbar</p>
+        <p class="search-error__msg">${this._esc(message)}</p>
+        <button id="search-retry-btn" class="search-retry-btn">Erneut versuchen</button>
+      </div>
+    `;
+    box.classList.remove('hidden');
+    document.getElementById('search-retry-btn')?.addEventListener('click', () => {
+      this.adapter._monsterList = null;
+      const currentQuery = document.getElementById('monster-search')?.value || '';
+      if (currentQuery.length >= 2) this._handleSearchInput(currentQuery);
+    });
+  }
+
   _hideSearchResults() {
     const box = document.getElementById('search-results');
     box?.classList.add('hidden');
-    const input = document.getElementById('monster-search');
-    if (input) input.value = '';
     const loadingIcon = document.getElementById('search-loading');
     loadingIcon?.classList.add('hidden');
   }
 
   async _addMonsterByIndex(index) {
     this._hideSearchResults();
+    const searchInput = document.getElementById('monster-search');
+    if (searchInput) searchInput.value = '';
     const loadingIcon = document.getElementById('search-loading');
     loadingIcon?.classList.remove('hidden');
     try {

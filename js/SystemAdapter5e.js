@@ -31,19 +31,26 @@ export class SystemAdapter5e {
    * @returns {Promise<Array<{index:string, name:string}>>}
    */
   async fetchMonsterList() {
-    if (this._monsterList) return this._monsterList;
+    // NOTE: check !== null, not just truthy — empty array [] is a valid cached result
+    if (this._monsterList !== null) return this._monsterList;
     if (this._listFetchPromise) return this._listFetchPromise;
 
     this._listFetchPromise = fetch(`${SystemAdapter5e.BASE_URL}/monsters`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status} ${r.statusText}`);
+        return r.json();
+      })
       .then(data => {
-        this._monsterList = data.results || [];
+        // API returns { count, results: [...] } — handle both shapes defensively
+        const list = Array.isArray(data) ? data : (Array.isArray(data.results) ? data.results : []);
+        this._monsterList = list;
         return this._monsterList;
       })
       .catch(e => {
         console.warn('[SystemAdapter5e] fetchMonsterList failed:', e);
-        this._monsterList = [];
-        return [];
+        // Do NOT cache the error state — leave _monsterList as null so the next
+        // search attempt will trigger a fresh fetch.
+        return null;
       })
       .finally(() => { this._listFetchPromise = null; });
 
@@ -59,6 +66,9 @@ export class SystemAdapter5e {
    */
   async searchMonsters(query, limit = 10) {
     const list = await this.fetchMonsterList();
+    if (list === null) {
+      throw new Error('Monster-Liste nicht verfügbar. Bitte Internetverbindung prüfen oder Seite neu laden.');
+    }
     if (!query) return [];
     const q = query.toLowerCase();
     return list.filter(m => m.name.toLowerCase().includes(q)).slice(0, limit);
