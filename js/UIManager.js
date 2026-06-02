@@ -132,14 +132,6 @@ export class UIManager {
     this._on('export-all-btn', 'click', () => this.exportMgr.exportAll(this.core.getFullState()));
     this._on('import-file-input', 'change', (e) => this._handleImport(e.target.files[0]));
 
-    // -- Quick save/load (top bar) --
-    this._on('save-json-btn', 'click', () => this.exportMgr.exportAll(this.core.getFullState()));
-    this._on('load-json-btn', 'click', () => {
-      const desktopInput = document.getElementById('import-file-input-desktop');
-      const mobileInput = document.getElementById('import-file-input');
-      (desktopInput || mobileInput)?.click();
-    });
-
     // -- Export / Import (desktop footer) --
     this._on('export-pcs-btn-desktop', 'click', () => this.exportMgr.exportPCs(this.core.getFullState()));
     this._on('export-all-btn-desktop', 'click', () => this.exportMgr.exportAll(this.core.getFullState()));
@@ -255,10 +247,6 @@ export class UIManager {
       ? `Gruppe x${c.groupCount}`
       : (c.isPC ? 'SC' : (c.monsterIndex ? 'Monster' : 'NSC'));
 
-    const hasRealMonsterData = c.monsterData && !c.monsterData._cached;
-    const expandedRow = (c.isExpanded && hasRealMonsterData)
-      ? this._buildExpandedRow(c)
-      : '';
     const hpControlsClass = c.isGroup ? 'hp-controls hp-controls--group' : 'hp-controls';
     const groupPools = (c.isGroup && Array.isArray(c.hpPools))
       ? c.hpPools.map((pool, poolIdx) => {
@@ -331,10 +319,6 @@ export class UIManager {
               class="action-btn" title="Details">
               <span class="material-symbols-outlined">info</span>
             </button>
-            <button data-action="expand" data-id="${c.id}"
-              class="action-btn" title="${c.isExpanded ? 'Einklappen' : 'Aufklappen'}">
-              <span class="material-symbols-outlined">${c.isExpanded ? 'expand_less' : 'expand_more'}</span>
-            </button>
             ` : ''}
             <button data-action="remove" data-id="${c.id}"
               class="action-btn action-btn--danger" title="Entfernen">
@@ -350,52 +334,6 @@ export class UIManager {
               <span class="material-symbols-outlined">delete_forever</span>
             </button>
             ` : ''}
-          </div>
-        </td>
-      </tr>
-      ${expandedRow}
-    `;
-  }
-
-  _buildExpandedRow(c) {
-    const m = c.monsterData;
-    const abilities = [
-      ['STR', m.strength], ['DEX', m.dexterity], ['CON', m.constitution],
-      ['INT', m.intelligence], ['WIS', m.wisdom], ['CHA', m.charisma],
-    ];
-    const abilityGrid = abilities.map(([label, val]) =>
-      `<div class="ability-card">
-        <div class="ability-card__label">${label}</div>
-        <div class="ability-card__score">${val}</div>
-      </div>`
-    ).join('');
-
-    const specialAbilities = (m.special_abilities || []).map(a =>
-      `<p><span class="stat-name">${this._esc(a.name)}.</span> <span class="stat-desc">${this._esc(a.desc)}</span></p>`
-    ).join('') || '<p class="stat-desc">—</p>';
-
-    const actions = (m.actions || []).map(a =>
-      `<p><span class="stat-name">${this._esc(a.name)}.</span> <span class="stat-desc">${this._esc(a.desc)}</span></p>`
-    ).join('') || '<p class="stat-desc">—</p>';
-    const savingThrows = this._buildSavingThrowsHtml(m);
-
-    return `
-      <tr class="expanded-row">
-        <td colspan="7">
-          <div class="ability-grid">${abilityGrid}</div>
-          <div class="expanded-sections">
-            <div>
-              <p class="expanded-section__title">Rettungswürfe</p>
-              <div class="expanded-section__body">${savingThrows}</div>
-            </div>
-            <div>
-              <p class="expanded-section__title">Besondere Fähigkeiten</p>
-              <div class="expanded-section__body">${specialAbilities}</div>
-            </div>
-            <div>
-              <p class="expanded-section__title">Aktionen</p>
-              <div class="expanded-section__body">${actions}</div>
-            </div>
           </div>
         </td>
       </tr>
@@ -662,9 +600,6 @@ export class UIManager {
         this.core.updateCombatant(id, { hp: reviveTo });
         break;
       }
-      case 'expand':
-        this._handleExpand(id);
-        break;
       case 'show-details':
         this._handleShowDetails(id);
         break;
@@ -927,12 +862,6 @@ export class UIManager {
     if (c.monsterData && !c.monsterData._cached) return; // already have real data
     const data = await this.adapter.fetchMonsterDetails(c.monsterIndex);
     if (data) this.core.updateCombatant(id, { monsterData: data });
-  }
-
-  async _handleExpand(id) {
-    await this._ensureMonsterData(id);
-    const c = this.core.combatants.find(x => x.id === id);
-    if (c) this.core.updateCombatant(id, { isExpanded: !c.isExpanded });
   }
 
   async _handleShowDetails(id) {

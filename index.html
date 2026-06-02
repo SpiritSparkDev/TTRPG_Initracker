@@ -20,47 +20,19 @@
 <body>
 
   <!-- =========================================================================
-       TOP NAVIGATION BAR
-       ========================================================================= -->
-  <nav id="top-app-bar" class="top-bar">
-    <div class="top-bar__brand">
-      <span class="app-title">Initiative Tracker</span>
-    </div>
-    <div class="top-bar__actions">
-      <div class="round-counter">
-        <span class="material-symbols-outlined round-counter__icon">cycle</span>
-        Runde <span id="round-display" class="round-counter__value">–</span>
-      </div>
-      <div class="top-bar__file-actions">
-        <button id="save-json-btn" class="btn btn--ghost">Speichern JSON</button>
-        <button id="load-json-btn" class="btn btn--ghost">Laden JSON</button>
-      </div>
-      <button id="reset-btn" class="btn btn--ghost">Zurücksetzen</button>
-      <button id="end-combat-btn" class="btn btn--ghost">Kampf beenden</button>
-      <button id="next-turn-btn" class="btn btn--primary">Nächster Zug</button>
-    </div>
-  </nav>
-
-  <!-- =========================================================================
-       SIDE NAVIGATION (Desktop)
+       LEFT CONTROL PANEL
        ========================================================================= -->
   <aside class="sidebar">
-    <div class="sidebar__profile">
-      <div class="sidebar__avatar">
-        <span class="material-symbols-outlined">person</span>
-      </div>
-      <div>
-        <p class="sidebar__role-title">Dungeon Master</p>
-        <p class="sidebar__role-sub">Stufe 20 Erzähler</p>
-      </div>
+    <div class="sidebar__section">
+      <h1 class="app-title">Initiative Tracker</h1>
+      <p class="sidebar__meta">Runde: <span id="round-display" class="round-counter__value">–</span></p>
     </div>
 
-    <nav class="sidebar__nav">
-      <div class="sidebar__nav-item sidebar__nav-item--active">
-        <span class="material-symbols-outlined">swords</span>
-        <span>Kampf</span>
-      </div>
-    </nav>
+    <div class="sidebar__section sidebar__section--actions">
+      <button id="next-turn-btn" class="btn btn--primary sidebar__action-btn">Nächster Zug</button>
+      <button id="end-combat-btn" class="btn btn--ghost sidebar__action-btn">Kampf beenden</button>
+      <button id="reset-btn" class="btn btn--ghost sidebar__action-btn">Zurücksetzen</button>
+    </div>
 
     <div class="sidebar__footer">
       <button id="settings-btn-sidebar" class="sidebar__btn">
