@@ -301,6 +301,13 @@
             </label>
           </div>
         </div>
+        <div>
+          <p class="settings-group__label">Tie-Breaker (gleiche Initiative)</p>
+          <select id="setting-tie-breaker" class="settings-select">
+            <option value="name">Name (alphabetisch)</option>
+            <option value="dexterity">Geschicklichkeit (absteigend)</option>
+          </select>
+        </div>
         <!-- System (locked) -->
         <div>
           <p class="settings-group__label">Regelsystem</p>
@@ -411,6 +418,10 @@
         </div>
         <div id="monster-add-abilities" class="ability-grid"></div>
         <div class="expanded-sections">
+          <div>
+            <p class="expanded-section__title">Rettungswürfe</p>
+            <div id="monster-add-saves" class="expanded-section__body"></div>
+          </div>
           <div>
             <p class="expanded-section__title">Besondere Fähigkeiten</p>
             <div id="monster-add-special" class="expanded-section__body"></div>

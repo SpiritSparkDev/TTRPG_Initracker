@@ -343,12 +343,17 @@ export class UIManager {
     const actions = (m.actions || []).map(a =>
       `<p><span class="stat-name">${this._esc(a.name)}.</span> <span class="stat-desc">${this._esc(a.desc)}</span></p>`
     ).join('') || '<p class="stat-desc">—</p>';
+    const savingThrows = this._buildSavingThrowsHtml(m);
 
     return `
       <tr class="expanded-row">
         <td colspan="7">
           <div class="ability-grid">${abilityGrid}</div>
           <div class="expanded-sections">
+            <div>
+              <p class="expanded-section__title">Rettungswürfe</p>
+              <div class="expanded-section__body">${savingThrows}</div>
+            </div>
             <div>
               <p class="expanded-section__title">Besondere Fähigkeiten</p>
               <div class="expanded-section__body">${specialAbilities}</div>
@@ -380,6 +385,7 @@ export class UIManager {
         ['STR', m.strength], ['DEX', m.dexterity], ['CON', m.constitution],
         ['INT', m.intelligence], ['WIS', m.wisdom], ['CHA', m.charisma],
       ];
+      const savingThrows = this._buildSavingThrowsHtml(m);
       content.innerHTML = `
         <div class="drawer-abilities">
           ${abilities.map(([l, v]) => `
@@ -390,6 +396,10 @@ export class UIManager {
             </div>`).join('')}
         </div>
         <div class="drawer-sections">
+          <div>
+            <p class="drawer-section__title">Rettungswürfe</p>
+            <div class="drawer-section__body">${savingThrows}</div>
+          </div>
           <div>
             <p class="drawer-section__title">Besondere Fähigkeiten</p>
             <div class="drawer-section__body">
@@ -483,6 +493,8 @@ export class UIManager {
     const s = this.core.settings;
     document.getElementById('setting-auto-hp').checked = s.autoHp;
     document.getElementById('setting-auto-init').checked = s.autoInitiative;
+    const tieBreakerSelect = document.getElementById('setting-tie-breaker');
+    if (tieBreakerSelect) tieBreakerSelect.value = s.tieBreaker || 'name';
     const radio = document.querySelector(`input[name="naming"][value="${s.namingConvention}"]`);
     if (radio) radio.checked = true;
     const modal = document.getElementById('settings-modal');
@@ -500,6 +512,7 @@ export class UIManager {
       autoHp: document.getElementById('setting-auto-hp')?.checked ?? true,
       autoInitiative: document.getElementById('setting-auto-init')?.checked ?? true,
       namingConvention: naming,
+      tieBreaker: document.getElementById('setting-tie-breaker')?.value || 'name',
     });
     this._closeSettings();
   }
@@ -745,7 +758,9 @@ export class UIManager {
     const actions = (monsterData.actions || []).map(a =>
       `<p><span class="stat-name">${this._esc(a.name)}.</span> <span class="stat-desc">${this._esc(a.desc)}</span></p>`
     ).join('') || '<p class="stat-desc">—</p>';
+    const saves = this._buildSavingThrowsHtml(monsterData);
 
+    document.getElementById('monster-add-saves').innerHTML = saves;
     document.getElementById('monster-add-special').innerHTML = special;
     document.getElementById('monster-add-actions').innerHTML = actions;
     document.getElementById('monster-add-modal')?.classList.add('is-open');
@@ -871,6 +886,20 @@ export class UIManager {
   _setText(id, text) {
     const el = document.getElementById(id);
     if (el) el.textContent = text;
+  }
+
+  _buildSavingThrowsHtml(monsterData) {
+    const proficiency = Array.isArray(monsterData?.proficiencies) ? monsterData.proficiencies : [];
+    const saveRows = proficiency
+      .filter((p) => String(p?.proficiency?.index || '').startsWith('saving-throw-'))
+      .map((p) => {
+        const stat = String(p.proficiency.index).replace('saving-throw-', '').toUpperCase();
+        const value = Number(p.value) || 0;
+        return `${stat} ${value >= 0 ? '+' : ''}${value}`;
+      });
+
+    if (saveRows.length === 0) return '<p class="stat-desc">—</p>';
+    return `<p class="stat-desc">${saveRows.join(', ')}</p>`;
   }
 
   /**

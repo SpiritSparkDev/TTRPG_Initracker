@@ -136,6 +136,7 @@ export class SystemAdapter5e {
       hp,
       maxHp: monsterData.hit_points,
       ac,
+      dexterity: Number(monsterData.dexterity) || 10,
       passivePerception: monsterData.senses?.passive_perception ?? 10,
       isPC: false,
       monsterIndex: monsterData.index,

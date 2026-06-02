@@ -25,6 +25,7 @@ export class CombatTrackerCore {
     autoHp: true,
     autoInitiative: true,
     namingConvention: 'numeric', // 'numeric' | 'alphabetic' | 'adjective'
+    tieBreaker: 'name', // 'name' | 'dexterity'
     system: 'dnd5e2014',
   };
 
@@ -156,6 +157,7 @@ export class CombatTrackerCore {
       hp: isGroup ? hpPools.reduce((sum, val) => sum + val, 0) : initialHp,
       maxHp: isGroup ? (initialMaxHp * groupCount) : initialMaxHp,
       ac: Number(partial.ac) || 10,
+      dexterity: Number(partial.dexterity) || 10,
       passivePerception: Number(partial.passivePerception) || 10,
       isPC: Boolean(partial.isPC),
       isGroup,
@@ -260,9 +262,16 @@ export class CombatTrackerCore {
     const activeId = (this.isCombatActive && this.activeIndex >= 0)
       ? this.combatants[this.activeIndex]?.id
       : null;
+    const tieBreaker = this.settings.tieBreaker || 'name';
 
     this.combatants.sort((a, b) => {
       if (b.initiative !== a.initiative) return b.initiative - a.initiative;
+
+      if (tieBreaker === 'dexterity') {
+        const dexDiff = (Number(b.dexterity) || 10) - (Number(a.dexterity) || 10);
+        if (dexDiff !== 0) return dexDiff;
+      }
+
       return a.name.localeCompare(b.name);
     });
 
