@@ -370,6 +370,32 @@
   </div>
 
   <!-- =========================================================================
+       GROUP POOL DAMAGE MODAL
+       ========================================================================= -->
+  <div id="group-pool-damage-modal" class="modal-overlay">
+    <div class="modal">
+      <div class="modal__header">
+        <h3 id="group-pool-damage-title" class="modal__title">Schaden auf Pool</h3>
+        <button id="group-pool-damage-close" class="modal__close">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+      <form id="group-pool-damage-form" class="modal__form" novalidate>
+        <p id="group-pool-damage-meta" class="modal__meta"></p>
+        <div class="form-field">
+          <label class="form-label" for="group-pool-damage-amount">Schaden</label>
+          <input id="group-pool-damage-amount" type="number" min="0" value="0" class="form-input form-input--mono" />
+        </div>
+        <div id="group-pool-damage-error" class="form-error hidden"></div>
+        <div class="modal__actions">
+          <button type="button" id="group-pool-damage-cancel" class="btn--cancel">Abbrechen</button>
+          <button type="submit" class="btn--submit">Anwenden</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
        MONSTER PREVIEW & ADD MODAL
        ========================================================================= -->
   <div id="monster-add-modal" class="modal-overlay">

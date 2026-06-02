@@ -21,6 +21,7 @@ export class UIManager {
 
     this._searchDebounceTimer = null;
     this._monsterPreviewData = null;
+    this._groupPoolDamageContext = null;
   }
 
   // ---------------------------------------------------------------------------
@@ -66,6 +67,17 @@ export class UIManager {
     this._on('hp-modal-form', 'submit', (e) => {
       e.preventDefault();
       this._submitHpModal();
+    });
+
+    // -- Group pool damage modal --
+    this._on('group-pool-damage-close', 'click', () => this._closeGroupPoolDamageModal());
+    this._on('group-pool-damage-cancel', 'click', () => this._closeGroupPoolDamageModal());
+    this._on('group-pool-damage-modal', 'click', (e) => {
+      if (e.target.id === 'group-pool-damage-modal') this._closeGroupPoolDamageModal();
+    });
+    this._on('group-pool-damage-form', 'submit', (e) => {
+      e.preventDefault();
+      this._submitGroupPoolDamage();
     });
 
     // -- Monster add preview modal --
@@ -237,6 +249,7 @@ export class UIManager {
       'initiative-row',
       isActive ? 'initiative-row--active' : '',
       isDead ? 'initiative-row--dead' : '',
+      c.isGroup ? 'initiative-row--group' : '',
     ].filter(Boolean).join(' ');
     const typeLabel = c.isGroup
       ? `Gruppe x${c.groupCount}`
@@ -245,6 +258,26 @@ export class UIManager {
     const hasRealMonsterData = c.monsterData && !c.monsterData._cached;
     const expandedRow = (c.isExpanded && hasRealMonsterData)
       ? this._buildExpandedRow(c)
+      : '';
+    const hpControlsClass = c.isGroup ? 'hp-controls hp-controls--group' : 'hp-controls';
+    const groupPools = (c.isGroup && Array.isArray(c.hpPools))
+      ? c.hpPools.map((pool, poolIdx) => {
+          const poolName = `${c.nameBase || c.name} ${poolIdx + 1}`;
+          return `
+            <button
+              type="button"
+              data-action="group-pool-damage"
+              data-id="${c.id}"
+              data-pool-index="${poolIdx}"
+              data-pool-name="${this._esc(poolName)}"
+              class="group-pool ${pool <= 0 ? 'group-pool--dead' : ''}"
+              title="Schaden auf ${this._esc(poolName)} anwenden"
+            >
+              <span class="group-pool__name">${this._esc(poolName)}</span>
+              <span class="group-pool__hp">${pool} TP</span>
+            </button>
+          `;
+        }).join('')
       : '';
 
     return `
@@ -264,7 +297,7 @@ export class UIManager {
             class="initiative-input" />
         </td>
         <td class="td-hp">
-          <div class="hp-controls">
+          <div class="${hpControlsClass}">
             <div class="hp-row">
               <button data-action="hp-minus" data-id="${c.id}" data-delta="1"
                 class="hp-btn hp-btn--minus">−</button>
@@ -286,6 +319,7 @@ export class UIManager {
             <div class="hp-bar-track">
               <div class="hp-bar-fill ${hpBarClass}" style="width:${hpPct}%"></div>
             </div>
+            ${c.isGroup ? `<div class="group-pools">${groupPools}</div>` : ''}
           </div>
         </td>
         <td class="td-stat">${c.ac}</td>
@@ -647,7 +681,68 @@ export class UIManager {
         if (c) this.core.updateCombatant(id, { hp: Math.min(c.maxHp, c.hp + Number(dataset.delta || 1)) });
         break;
       }
+      case 'group-pool-damage': {
+        this._openGroupPoolDamageModal(id, dataset.poolIndex, dataset.poolName);
+        break;
+      }
     }
+  }
+
+  _openGroupPoolDamageModal(id, poolIndexRaw, poolNameRaw) {
+    const c = this.core.combatants.find(x => x.id === id);
+    if (!c || !c.isGroup || !Array.isArray(c.hpPools)) return;
+
+    const poolIndex = Number(poolIndexRaw);
+    if (!Number.isInteger(poolIndex) || poolIndex < 0 || poolIndex >= c.hpPools.length) return;
+
+    const poolName = poolNameRaw || `Pool ${poolIndex + 1}`;
+    const currentHp = Math.max(0, Number(c.hpPools[poolIndex]) || 0);
+
+    this._groupPoolDamageContext = { id, poolIndex };
+    const title = document.getElementById('group-pool-damage-title');
+    if (title) title.textContent = `Schaden auf ${poolName}`;
+
+    const meta = document.getElementById('group-pool-damage-meta');
+    if (meta) meta.textContent = `Aktuell: ${currentHp} TP`;
+
+    const amount = document.getElementById('group-pool-damage-amount');
+    if (amount) amount.value = '0';
+
+    document.getElementById('group-pool-damage-error')?.classList.add('hidden');
+    document.getElementById('group-pool-damage-modal')?.classList.add('is-open');
+    amount?.focus();
+  }
+
+  _closeGroupPoolDamageModal() {
+    document.getElementById('group-pool-damage-modal')?.classList.remove('is-open');
+    this._groupPoolDamageContext = null;
+  }
+
+  _submitGroupPoolDamage() {
+    const ctx = this._groupPoolDamageContext;
+    if (!ctx) return;
+
+    const c = this.core.combatants.find(x => x.id === ctx.id);
+    if (!c || !c.isGroup || !Array.isArray(c.hpPools) || ctx.poolIndex >= c.hpPools.length) {
+      this._closeGroupPoolDamageModal();
+      return;
+    }
+
+    const amountEl = document.getElementById('group-pool-damage-amount');
+    const errorEl = document.getElementById('group-pool-damage-error');
+    const damage = Number(amountEl?.value);
+    if (!Number.isFinite(damage) || damage < 0) {
+      if (errorEl) {
+        errorEl.textContent = 'Bitte eine gültige positive Zahl eingeben.';
+        errorEl.classList.remove('hidden');
+      }
+      return;
+    }
+
+    const hpPools = [...c.hpPools];
+    hpPools[ctx.poolIndex] = Math.max(0, hpPools[ctx.poolIndex] - Math.floor(damage));
+    this.core.updateCombatant(c.id, { hpPools });
+    this._closeGroupPoolDamageModal();
   }
 
   _openHpModal(id) {
