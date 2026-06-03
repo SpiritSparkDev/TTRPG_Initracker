@@ -60,20 +60,11 @@
         </div>
         <div>
           <p class="settings-group__label">Namenskonvention (Duplikate)</p>
-          <div class="settings-radio-group">
-            <label class="settings-radio">
-              <input type="radio" name="naming" value="numeric" id="naming-numeric" class="settings-radio__input" />
-              <span class="settings-radio__label">Numerisch — Goblin 1, Goblin 2</span>
-            </label>
-            <label class="settings-radio">
-              <input type="radio" name="naming" value="alphabetic" id="naming-alpha" class="settings-radio__input" />
-              <span class="settings-radio__label">Alphabetisch — Goblin A, Goblin B</span>
-            </label>
-            <label class="settings-radio">
-              <input type="radio" name="naming" value="adjective" id="naming-adj" class="settings-radio__input" />
-              <span class="settings-radio__label">Adjektive — Flinker Goblin, Wütender Goblin</span>
-            </label>
-          </div>
+          <select id="setting-naming-convention" class="settings-select">
+            <option value="numeric">Numerisch — Goblin 1, Goblin 2</option>
+            <option value="alphabetic">Alphabetisch — Goblin A, Goblin B</option>
+            <option value="adjective">Adjektive — Flinker Goblin, Wütender Goblin</option>
+          </select>
         </div>
         <div>
           <p class="settings-group__label">Tie-Breaker (gleiche Initiative)</p>
@@ -147,7 +138,7 @@
                 id="monster-search"
                 type="text"
                 autocomplete="off"
-                placeholder="5e Monster suchen (z.B. Goblin)…"
+                placeholder="Suchen"
                 class="search-input"
               />
               <span id="search-loading" class="material-symbols-outlined search-loading hidden">progress_activity</span>
@@ -156,8 +147,7 @@
           </div>
 
           <div class="add-buttons">
-            <button id="add-player-btn" class="btn--add-player">+ Spieler</button>
-            <button id="manual-entry-btn" class="btn--manual-entry">Manuell</button>
+              <button id="add-combatant-btn" class="btn--add-combatant">+ Kombattant hinzufügen</button>
           </div>
         </section>
       </section>
@@ -273,6 +263,15 @@
           <label class="form-label" for="m-name">Name</label>
           <input id="m-name" type="text" required class="form-input" />
         </div>
+        <div class="form-field">
+          <label class="form-label" for="m-combatant-type">Typ</label>
+          <select id="m-combatant-type" class="form-input form-select">
+            <option value="sc" selected>SC</option>
+            <option value="ally">Verbündete</option>
+            <option value="monster">Monster</option>
+            <option value="special">Spezial</option>
+          </select>
+        </div>
         <div class="form-grid-2">
           <div class="form-field">
             <label class="form-label" for="m-init">Initiative</label>
@@ -292,10 +291,6 @@
             <label class="form-label" for="m-pp">Pass. Wahrnehmung</label>
             <input id="m-pp" type="number" min="0" class="form-input form-input--mono" />
           </div>
-        </div>
-        <div class="form-checkbox-row">
-          <input id="m-is-pc" type="checkbox" class="form-checkbox" />
-          <label for="m-is-pc" class="form-checkbox-label">Ist Spielercharakter (SC)</label>
         </div>
         <div id="modal-error" class="form-error hidden"></div>
         <div class="modal__actions">

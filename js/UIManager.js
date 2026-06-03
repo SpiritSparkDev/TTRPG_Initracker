@@ -29,7 +29,7 @@ export class UIManager {
     this._searchDebounceTimer = null;
     this._monsterPreviewData = null;
     this._groupPoolDamageContext = null;
-    this._isSidebarCollapsed = false;
+    this._isSidebarCollapsed = true;
   }
 
   // ---------------------------------------------------------------------------
@@ -52,9 +52,8 @@ export class UIManager {
     });
     this._on('end-combat-btn', 'click', () => this._endCombatAndClearMonsters());
 
-    // -- Add player / custom entry --
-    this._on('add-player-btn', 'click', () => this._openModal(true));
-    this._on('manual-entry-btn', 'click', () => this._openModal(false));
+    // -- Add combatant --
+    this._on('add-combatant-btn', 'click', () => this._openModal());
 
     // -- Manual entry modal --
     this._on('modal-cancel', 'click', () => this._closeModal());
@@ -242,7 +241,14 @@ export class UIManager {
       : hpPct > 25
         ? 'hp-bar-fill--mid'
         : 'hp-bar-fill--low';
-    const rowNameClass = c.isPC ? 'row-name--pc' : 'row-name--monster';
+    const combatantType = c.combatantType || (c.isPC ? 'sc' : 'monster');
+    const rowNameClass = combatantType === 'sc'
+      ? 'row-name--pc'
+      : combatantType === 'ally'
+        ? 'row-name--ally'
+        : combatantType === 'special'
+          ? 'row-name--special'
+          : 'row-name--monster';
     const rowClass = [
       'initiative-row',
       isActive ? 'initiative-row--active' : '',
@@ -251,7 +257,18 @@ export class UIManager {
     ].filter(Boolean).join(' ');
     const typeLabel = c.isGroup
       ? `Gruppe x${c.groupCount}`
-      : (c.isPC ? 'SC' : (c.monsterIndex ? 'Monster' : 'NSC'));
+      : (combatantType === 'sc'
+        ? 'SC'
+        : combatantType === 'ally'
+          ? 'Verbündete'
+          : combatantType === 'special'
+            ? 'Spezial'
+            : (c.monsterIndex ? 'Monster' : 'NSC'));
+    const typeBadgeClass = combatantType === 'ally'
+      ? 'type-badge type-badge--ally'
+      : combatantType === 'special'
+        ? 'type-badge type-badge--special'
+        : 'type-badge';
 
     const hpControlsClass = c.isGroup ? 'hp-controls hp-controls--group' : 'hp-controls';
     const groupPools = (c.isGroup && Array.isArray(c.hpPools))
@@ -282,7 +299,7 @@ export class UIManager {
         <td class="row-name ${rowNameClass}">
           <div class="name-wrap">
             <span class="name-text">${this._esc(c.name)}</span>
-            <span class="type-badge">${typeLabel}</span>
+            <span class="${typeBadgeClass}">${typeLabel}</span>
           </div>
         </td>
         <td class="td-initiative">
@@ -409,10 +426,12 @@ export class UIManager {
         </div>`;
     }
 
+    document.body.classList.add('layout--drawer-open');
     document.getElementById('detail-drawer')?.classList.remove('drawer--closed');
   }
 
   _closeDrawer() {
+    document.body.classList.remove('layout--drawer-open');
     document.getElementById('detail-drawer')?.classList.add('drawer--closed');
   }
 
@@ -420,15 +439,14 @@ export class UIManager {
   // Modal helpers
   // ---------------------------------------------------------------------------
 
-  _openModal(isPC = false) {
+  _openModal() {
     const overlay = document.getElementById('modal-overlay');
     const title = document.getElementById('modal-title');
-    const pcCheckbox = document.getElementById('m-is-pc');
     document.getElementById('manual-form')?.reset();
     document.getElementById('modal-error')?.classList.add('hidden');
-    title.textContent = isPC ? 'Spielercharakter hinzufügen' : 'Kombattant hinzufügen';
-    pcCheckbox.checked = isPC;
-    pcCheckbox.disabled = isPC; // lock it for the player flow
+    title.textContent = 'Kombattant hinzufügen';
+    const typeSelect = document.getElementById('m-combatant-type');
+    if (typeSelect) typeSelect.value = 'sc';
     overlay.classList.add('is-open');
     document.getElementById('m-name')?.focus();
   }
@@ -436,12 +454,11 @@ export class UIManager {
   _closeModal() {
     const overlay = document.getElementById('modal-overlay');
     overlay.classList.remove('is-open');
-    const pcCheckbox = document.getElementById('m-is-pc');
-    if (pcCheckbox) pcCheckbox.disabled = false;
   }
 
   _handleManualSubmit() {
     const name = document.getElementById('m-name')?.value.trim();
+    const combatantType = document.getElementById('m-combatant-type')?.value || 'monster';
     const errorEl = document.getElementById('modal-error');
     if (!name) {
       if (errorEl) {
@@ -458,7 +475,8 @@ export class UIManager {
       maxHp: hp,
       ac: parseInt(document.getElementById('m-ac')?.value) || 10,
       passivePerception: parseInt(document.getElementById('m-pp')?.value) || 10,
-      isPC: document.getElementById('m-is-pc')?.checked ?? false,
+      isPC: combatantType === 'sc',
+      combatantType,
     });
     this._closeModal();
   }
@@ -473,12 +491,12 @@ export class UIManager {
     if (autoHp) autoHp.checked = Boolean(s.autoHp);
     const autoInit = document.getElementById('setting-auto-init');
     if (autoInit) autoInit.checked = Boolean(s.autoInitiative);
+    const namingSelect = document.getElementById('setting-naming-convention');
+    if (namingSelect) namingSelect.value = s.namingConvention || 'numeric';
     const monsterApiSelect = document.getElementById('setting-monster-api');
     if (monsterApiSelect) monsterApiSelect.value = s.monsterApi || 'dnd5eapi';
     const tieBreakerSelect = document.getElementById('setting-tie-breaker');
     if (tieBreakerSelect) tieBreakerSelect.value = s.tieBreaker || 'name';
-    const radio = document.querySelector(`input[name="naming"][value="${s.namingConvention}"]`);
-    if (radio) radio.checked = true;
   }
 
   _openSettings() {
@@ -514,7 +532,7 @@ export class UIManager {
   }
 
   _saveSettings() {
-    const naming = document.querySelector('input[name="naming"]:checked')?.value || 'numeric';
+    const naming = document.getElementById('setting-naming-convention')?.value || 'numeric';
     const settingsPatch = {
       autoHp: document.getElementById('setting-auto-hp')?.checked ?? true,
       autoInitiative: document.getElementById('setting-auto-init')?.checked ?? true,

@@ -118,6 +118,7 @@ export class CombatTrackerCore {
       // Restore monsterData reference markers — actual data reloaded on demand
       monsterData: c.monsterData ?? null,
       monsterSource: c.monsterSource || (data.settings?.monsterApi ?? CombatTrackerCore.DEFAULT_SETTINGS.monsterApi),
+      combatantType: c.combatantType || (c.isPC ? 'sc' : 'monster'),
       isExpanded: c.isExpanded ?? false,
       isGroup: c.isGroup ?? false,
       groupCount: Number(c.groupCount) || 1,
@@ -162,6 +163,7 @@ export class CombatTrackerCore {
       dexterity: Number(partial.dexterity) || 10,
       passivePerception: Number(partial.passivePerception) || 10,
       isPC: Boolean(partial.isPC),
+      combatantType: partial.combatantType || (partial.isPC ? 'sc' : 'monster'),
       isGroup,
       groupCount,
       hpPools,
