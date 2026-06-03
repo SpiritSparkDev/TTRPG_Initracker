@@ -27,6 +27,7 @@ export class CombatTrackerCore {
     namingConvention: 'numeric', // 'numeric' | 'alphabetic' | 'adjective'
     tieBreaker: 'name', // 'name' | 'dexterity'
     system: 'dnd5e2014',
+    monsterApi: 'dnd5eapi', // 'dnd5eapi' | 'open5e'
   };
 
   constructor() {
@@ -116,6 +117,7 @@ export class CombatTrackerCore {
       ...c,
       // Restore monsterData reference markers — actual data reloaded on demand
       monsterData: c.monsterData ?? null,
+      monsterSource: c.monsterSource || (data.settings?.monsterApi ?? CombatTrackerCore.DEFAULT_SETTINGS.monsterApi),
       isExpanded: c.isExpanded ?? false,
       isGroup: c.isGroup ?? false,
       groupCount: Number(c.groupCount) || 1,
@@ -164,6 +166,7 @@ export class CombatTrackerCore {
       groupCount,
       hpPools,
       monsterIndex: partial.monsterIndex ?? null,
+      monsterSource: partial.monsterSource ?? this.settings.monsterApi ?? CombatTrackerCore.DEFAULT_SETTINGS.monsterApi,
       monsterData: partial.monsterData ?? null,
       isExpanded: false,
     };

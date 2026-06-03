@@ -26,6 +26,10 @@ Die App ist als SPA mit klarer Trennung aufgebaut:
   - API-Kommunikation (`fetchMonsterList`, `searchMonsters`, `fetchMonsterDetails`)
   - Regelbezogene Helfer (`calcModifier`, `rollInitiative`)
   - Mapping API-Monster -> Combatant-Payload
+- `js/SystemAdapterOpen5e.js`
+  - Open5e-v2-Kommunikation (`/creatures`)
+  - Normalisierung von Open5e-Daten auf das bestehende Monster-Schema
+  - Gleiches Adapter-Interface wie `SystemAdapter5e`
 - `js/UIManager.js`
   - Bindet DOM-Events
   - Rendert Stats/Liste/Interaktionen
@@ -51,6 +55,8 @@ Die App ist als SPA mit klarer Trennung aufgebaut:
     autoHp: boolean,
     autoInitiative: boolean,
     namingConvention: 'numeric' | 'alphabetic' | 'adjective',
+    tieBreaker: 'name' | 'dexterity',
+    monsterApi: 'dnd5eapi' | 'open5e',
     system: 'dnd5e2014'
   }
 }
@@ -70,6 +76,7 @@ Die App ist als SPA mit klarer Trennung aufgebaut:
   passivePerception: number,
   isPC: boolean,
   monsterIndex: string | null,
+  monsterSource: 'dnd5eapi' | 'open5e',
   monsterData: object | null,
   isExpanded: boolean,
   isGroup: boolean,
@@ -92,6 +99,11 @@ Hinweise:
 3. `core.loadFromStorage()`
 4. `ui.bindEvents()`
 5. `ui.render(core.getState())`
+
+Zusätzlich:
+
+- Adapter-Registry (`dnd5eapi`, `open5e`) wird in `main.js` verwaltet
+- API-Wechsel in den Einstellungen tauscht den aktiven Adapter zur Laufzeit
 
 ## 3.2 Mutationsmodell
 
@@ -163,7 +175,9 @@ Gruppenlogik:
 ### 6.1 Suche
 
 - Debounced Input
-- Trefferliste aus gecachter Monsterliste
+- Trefferliste aus aktivem Adapter:
+  - `dnd5eapi`: client-seitige Filterung auf gecachter Liste
+  - `open5e`: server-seitige Suche über `name__icontains`
 - API-Fehlerzustand mit Retry
 
 ### 6.2 Vorschau vor dem Hinzufügen

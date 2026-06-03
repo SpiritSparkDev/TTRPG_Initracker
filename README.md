@@ -21,7 +21,7 @@ Ein modularer, clientseitiger Initiative-Tracker für D&D 5e (SRD 2014) mit API-
 ### Teilnehmerverwaltung
 
 - Manuelle Teilnehmererfassung (Name, Initiative, TP, RK, Passive Wahrnehmung, SC-Flag)
-- Monster-Suche über dnd5eapi.co
+- Monster-Suche über dnd5eapi.co oder open5e.com (umschaltbar in den Einstellungen)
 - Dead-State-UX:
   - Teilnehmer mit 0 TP werden visuell ausgegraut
   - Aktionen für Wiederbeleben und endgültiges Entfernen
@@ -65,7 +65,9 @@ Ein modularer, clientseitiger Initiative-Tracker für D&D 5e (SRD 2014) mit API-
 - HTML5
 - Vanilla CSS (Design-Tokens als CSS Custom Properties)
 - Vanilla JavaScript (ES Modules, klassenbasiert)
-- Externe API: https://www.dnd5eapi.co/api
+- Externe APIs:
+  - https://www.dnd5eapi.co/api
+  - https://api.open5e.com/v2
 
 ## Projektstruktur
 
@@ -76,6 +78,7 @@ js/
   main.js                   # App-Bootstrap
   CombatTrackerCore.js      # Zustand, Kampflogik, CRUD, Sortierung
   SystemAdapter5e.js        # D&D-API, regelbezogene Berechnungen
+  SystemAdapterOpen5e.js    # Open5e-API und Daten-Normalisierung
   UIManager.js              # Rendering, Events, Modals, Workflows
   StorageManager.js         # LocalStorage Zugriff
   ExportImportManager.js    # JSON Export/Import
@@ -144,6 +147,7 @@ Ein Combatant enthält unter anderem:
 
 - Monster-Liste wird gecacht
 - Monster-Details werden pro Index gecacht
+- Datenquelle ist in den Einstellungen auswählbar (`dnd5eapi.co` oder `open5e.com`)
 - Bei API-Ausfall erscheint eine Such-Fehlermeldung mit Retry
 
 ## Bekannte Grenzen
@@ -162,6 +166,6 @@ Ein Combatant enthält unter anderem:
 
 ## Lizenz und Hinweise
 
-- Nutzt öffentliche Daten der dnd5eapi.co im Rahmen deren Bedingungen
+- Nutzt öffentliche Daten von dnd5eapi.co und open5e.com im Rahmen deren Bedingungen
 - D&D SRD/Regelbegriffe beachten
 - Dieses Projekt speichert Daten lokal im Browser (LocalStorage)

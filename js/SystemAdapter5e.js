@@ -10,6 +10,7 @@
 export class SystemAdapter5e {
   static SYSTEM_ID = 'dnd5e2014';
   static SYSTEM_LABEL = 'D&D 5e (2014)';
+  static ADAPTER_ID = 'dnd5eapi';
   static BASE_URL = 'https://www.dnd5eapi.co/api';
 
   constructor() {
@@ -92,6 +93,12 @@ export class SystemAdapter5e {
     }
   }
 
+  /** Clears all internal caches. */
+  clearCache() {
+    this._monsterList = null;
+    this._detailCache.clear();
+  }
+
   /**
    * Calculates a D&D 5e ability score modifier.
    * @param {number} stat - Ability score (e.g. 14)
@@ -140,6 +147,7 @@ export class SystemAdapter5e {
       passivePerception: monsterData.senses?.passive_perception ?? 10,
       isPC: false,
       monsterIndex: monsterData.index,
+      monsterSource: SystemAdapter5e.ADAPTER_ID,
       monsterData,
       isExpanded: false,
     };

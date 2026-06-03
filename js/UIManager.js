@@ -13,11 +13,18 @@ export class UIManager {
    * @param {import('./CombatTrackerCore.js').CombatTrackerCore} core
    * @param {import('./SystemAdapter5e.js').SystemAdapter5e} adapter
    * @param {import('./ExportImportManager.js').ExportImportManager} exportMgr
+   * @param {{ resolveAdapter?: (source: string) => any, onSettingsSaved?: (settings: object) => void }} [options]
    */
-  constructor(core, adapter, exportMgr) {
+  constructor(core, adapter, exportMgr, options = {}) {
     this.core = core;
     this.adapter = adapter;
     this.exportMgr = exportMgr;
+    this._resolveAdapter = typeof options.resolveAdapter === 'function'
+      ? options.resolveAdapter
+      : () => this.adapter;
+    this._onSettingsSaved = typeof options.onSettingsSaved === 'function'
+      ? options.onSettingsSaved
+      : null;
 
     this._searchDebounceTimer = null;
     this._monsterPreviewData = null;
@@ -465,6 +472,8 @@ export class UIManager {
     const s = this.core.settings;
     document.getElementById('setting-auto-hp').checked = s.autoHp;
     document.getElementById('setting-auto-init').checked = s.autoInitiative;
+    const monsterApiSelect = document.getElementById('setting-monster-api');
+    if (monsterApiSelect) monsterApiSelect.value = s.monsterApi || 'dnd5eapi';
     const tieBreakerSelect = document.getElementById('setting-tie-breaker');
     if (tieBreakerSelect) tieBreakerSelect.value = s.tieBreaker || 'name';
     const radio = document.querySelector(`input[name="naming"][value="${s.namingConvention}"]`);
@@ -480,12 +489,15 @@ export class UIManager {
 
   _saveSettings() {
     const naming = document.querySelector('input[name="naming"]:checked')?.value || 'numeric';
-    this.core.updateSettings({
+    const settingsPatch = {
       autoHp: document.getElementById('setting-auto-hp')?.checked ?? true,
       autoInitiative: document.getElementById('setting-auto-init')?.checked ?? true,
       namingConvention: naming,
       tieBreaker: document.getElementById('setting-tie-breaker')?.value || 'name',
-    });
+      monsterApi: document.getElementById('setting-monster-api')?.value || 'dnd5eapi',
+    };
+    this.core.updateSettings(settingsPatch);
+    if (this._onSettingsSaved) this._onSettingsSaved(this.core.settings);
     this._closeSettings();
   }
 
@@ -553,7 +565,7 @@ export class UIManager {
     `;
     box.classList.remove('hidden');
     document.getElementById('search-retry-btn')?.addEventListener('click', () => {
-      this.adapter._monsterList = null;
+      this.adapter.clearCache?.();
       const currentQuery = document.getElementById('monster-search')?.value || '';
       if (currentQuery.length >= 2) this._handleSearchInput(currentQuery);
     });
@@ -818,6 +830,7 @@ export class UIManager {
       passivePerception: Number(document.getElementById('monster-add-pp')?.value) || 10,
       isPC: false,
       monsterIndex: data.index,
+      monsterSource: data._source || this.core.settings.monsterApi || 'dnd5eapi',
       monsterData: data,
       isExpanded: false,
     };
@@ -860,7 +873,8 @@ export class UIManager {
     const c = this.core.combatants.find(x => x.id === id);
     if (!c || !c.monsterIndex) return;
     if (c.monsterData && !c.monsterData._cached) return; // already have real data
-    const data = await this.adapter.fetchMonsterDetails(c.monsterIndex);
+    const adapter = this._resolveAdapter(c.monsterSource || this.core.settings.monsterApi || 'dnd5eapi');
+    const data = await adapter.fetchMonsterDetails(c.monsterIndex);
     if (data) this.core.updateCombatant(id, { monsterData: data });
   }
 

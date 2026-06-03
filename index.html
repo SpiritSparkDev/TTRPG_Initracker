@@ -173,7 +173,7 @@
         <span class="material-symbols-outlined">settings</span> Einstellungen
       </button>
     </div>
-    <p class="footer-bar__note">Initiative Tracker — System Reference Document 5.1 / D&amp;D 5e 2014. Nutzung der dnd5eapi.co API gemäß OGL.</p>
+    <p class="footer-bar__note">Initiative Tracker — System Reference Document 5.1 / D&amp;D 5e 2014. Nutzt dnd5eapi.co und open5e.com als optionale Monster-APIs.</p>
   </footer>
 
   <!-- =========================================================================
@@ -279,6 +279,15 @@
             <option value="name">Name (alphabetisch)</option>
             <option value="dexterity">Geschicklichkeit (absteigend)</option>
           </select>
+        </div>
+        <!-- Monster API -->
+        <div>
+          <p class="settings-group__label">Monster-API</p>
+          <select id="setting-monster-api" class="settings-select">
+            <option value="dnd5eapi">dnd5eapi.co</option>
+            <option value="open5e">open5e.com</option>
+          </select>
+          <p class="settings-note">Gilt für Suche und neue Monster-Imports.</p>
         </div>
         <!-- System (locked) -->
         <div>
