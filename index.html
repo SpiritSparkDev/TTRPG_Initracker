@@ -24,20 +24,83 @@
        ========================================================================= -->
   <aside class="sidebar">
     <div class="sidebar__section">
-      <h1 class="app-title">Initiative Tracker</h1>
-      <p class="sidebar__meta">Runde: <span id="round-display" class="round-counter__value">–</span></p>
+      <div class="sidebar__brand-row">
+        <h1 class="app-title">Initiative Tracker</h1>
+        <button
+          id="sidebar-toggle"
+          class="sidebar__toggle"
+          type="button"
+          aria-label="Sidebar einklappen"
+          aria-expanded="true"
+        >
+          <span class="material-symbols-outlined">left_panel_close</span>
+        </button>
+      </div>
+      <p class="sidebar__meta">Steuerung und Kampfstatus liegen jetzt zentral im Hauptbereich.</p>
     </div>
 
-    <div class="sidebar__section sidebar__section--actions">
-      <button id="next-turn-btn" class="btn btn--primary sidebar__action-btn">Nächster Zug</button>
-      <button id="end-combat-btn" class="btn btn--ghost sidebar__action-btn">Kampf beenden</button>
-      <button id="reset-btn" class="btn btn--ghost sidebar__action-btn">Zurücksetzen</button>
-    </div>
-
-    <div class="sidebar__footer">
-      <button id="settings-btn-sidebar" class="sidebar__btn">
-        <span class="material-symbols-outlined">settings</span> Einstellungen
-      </button>
+    <div id="settings-panel" class="sidebar__section sidebar__section--settings">
+      <div class="sidebar__section-head">
+        <h2 class="sidebar__section-title">Einstellungen</h2>
+        <button id="settings-btn-sidebar" class="sidebar__btn sidebar__btn--inline" type="button">
+          <span class="material-symbols-outlined">settings</span> Fokus
+        </button>
+      </div>
+      <div class="settings-body settings-body--sidebar">
+        <div>
+          <p class="settings-group__label">Automatisierung</p>
+          <label class="settings-toggle">
+            <span class="settings-toggle__label">Automatische TP (Max. übernehmen)</span>
+            <input id="setting-auto-hp" type="checkbox" class="settings-checkbox" />
+          </label>
+          <label class="settings-toggle">
+            <span class="settings-toggle__label">Automatische Initiative würfeln</span>
+            <input id="setting-auto-init" type="checkbox" class="settings-checkbox" />
+          </label>
+        </div>
+        <div>
+          <p class="settings-group__label">Namenskonvention (Duplikate)</p>
+          <div class="settings-radio-group">
+            <label class="settings-radio">
+              <input type="radio" name="naming" value="numeric" id="naming-numeric" class="settings-radio__input" />
+              <span class="settings-radio__label">Numerisch — Goblin 1, Goblin 2</span>
+            </label>
+            <label class="settings-radio">
+              <input type="radio" name="naming" value="alphabetic" id="naming-alpha" class="settings-radio__input" />
+              <span class="settings-radio__label">Alphabetisch — Goblin A, Goblin B</span>
+            </label>
+            <label class="settings-radio">
+              <input type="radio" name="naming" value="adjective" id="naming-adj" class="settings-radio__input" />
+              <span class="settings-radio__label">Adjektive — Flinker Goblin, Wütender Goblin</span>
+            </label>
+          </div>
+        </div>
+        <div>
+          <p class="settings-group__label">Tie-Breaker (gleiche Initiative)</p>
+          <select id="setting-tie-breaker" class="settings-select">
+            <option value="name">Name (alphabetisch)</option>
+            <option value="dexterity">Geschicklichkeit (absteigend)</option>
+          </select>
+        </div>
+        <div>
+          <p class="settings-group__label">Monster-API</p>
+          <select id="setting-monster-api" class="settings-select">
+            <option value="dnd5eapi">dnd5eapi.co</option>
+            <option value="open5e">open5e.com</option>
+          </select>
+          <p class="settings-note">Gilt für Suche und neue Monster-Imports.</p>
+        </div>
+        <div>
+          <p class="settings-group__label">Regelsystem</p>
+          <select disabled class="settings-select">
+            <option>D&amp;D 5e (2014) — SRD</option>
+          </select>
+          <p class="settings-note">Weitere Systeme in Planung.</p>
+        </div>
+      </div>
+      <div class="settings-footer settings-footer--sidebar">
+        <button id="settings-save" class="btn--save" type="button">Speichern</button>
+      </div>
     </div>
   </aside>
 
@@ -45,77 +108,89 @@
        MAIN CONTENT
        ========================================================================= -->
   <main class="app-main">
+    <div class="app-main__layout">
+      <section class="app-main__left-column">
+        <section class="combat-hub">
+          <div class="combat-hub__intro">
+            <p class="combat-hub__eyebrow">Kampfkontrolle</p>
+            <div class="combat-hub__round">
+              <span class="combat-hub__round-label">Runde</span>
+              <span id="stat-round" class="combat-hub__round-value">–</span>
+            </div>
+          </div>
+          <div class="combat-hub__actions">
+            <button id="start-combat-btn" class="btn--start-combat combat-hub__primary-action">
+              <span class="material-symbols-outlined">play_arrow</span> Kampf starten
+            </button>
+            <button id="next-turn-btn" class="btn btn--primary combat-hub__action-btn">Nächster Zug</button>
+            <button id="end-combat-btn" class="btn btn--ghost combat-hub__action-btn">Kampf beenden</button>
+            <button id="reset-btn" class="btn btn--ghost combat-hub__action-btn">Zurücksetzen</button>
+          </div>
+        </section>
 
-    <!-- Dashboard Stats -->
-    <header class="stats-grid">
-      <div class="stat-card">
-        <span class="stat-card__label">Aktuelle Runde</span>
-        <span id="stat-round" class="stat-card__value stat-card__value--primary">–</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-card__label">Kombattanten</span>
-        <span id="stat-total" class="stat-card__value">0</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-card__label">Aktiv</span>
-        <span id="stat-active" class="stat-card__value--active">Warte…</span>
-      </div>
-      <div class="stat-card stat-card--action">
-        <button id="start-combat-btn" class="btn--start-combat">
-          <span class="material-symbols-outlined">play_arrow</span> Kampf starten
-        </button>
-      </div>
-    </header>
+        <header class="stats-grid stats-grid--summary">
+          <div class="stat-card">
+            <span class="stat-card__label">Kombattanten</span>
+            <span id="stat-total" class="stat-card__value">0</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__label">Aktiv</span>
+            <span id="stat-active" class="stat-card__value--active">Warte…</span>
+          </div>
+        </header>
 
-    <!-- Entry Form -->
-    <section class="entry-section">
-      <!-- Monster Search -->
-      <div class="search-box">
-        <div class="search-box__row">
-          <span class="material-symbols-outlined search-icon">search</span>
-          <input
-            id="monster-search"
-            type="text"
-            autocomplete="off"
-            placeholder="5e Monster suchen (z.B. Goblin)…"
-            class="search-input"
-          />
-          <span id="search-loading" class="material-symbols-outlined search-loading hidden">progress_activity</span>
+        <section class="entry-section">
+          <div class="search-box">
+            <div class="search-box__row">
+              <span class="material-symbols-outlined search-icon">search</span>
+              <input
+                id="monster-search"
+                type="text"
+                autocomplete="off"
+                placeholder="5e Monster suchen (z.B. Goblin)…"
+                class="search-input"
+              />
+              <span id="search-loading" class="material-symbols-outlined search-loading hidden">progress_activity</span>
+            </div>
+            <div id="search-results" class="search-results hidden"></div>
+          </div>
+
+          <div class="add-buttons">
+            <button id="add-player-btn" class="btn--add-player">+ Spieler</button>
+            <button id="manual-entry-btn" class="btn--manual-entry">Manuell</button>
+          </div>
+        </section>
+      </section>
+
+      <section class="app-main__right-column">
+        <div class="table-wrap table-wrap--initiative-panel">
+          <div class="table-wrap__header">
+            <p class="table-wrap__eyebrow">Initiative</p>
+            <p class="table-wrap__title">Aktive Reihenfolge und Status</p>
+          </div>
+          <div class="table-scroll">
+            <table class="initiative-table">
+              <thead>
+                <tr>
+                  <th class="th-indicator">▶</th>
+                  <th>Name</th>
+                  <th class="th-init">Init</th>
+                  <th class="th-hp">TP</th>
+                  <th class="th-ac">RK</th>
+                  <th class="th-pp">Pass. W.</th>
+                  <th class="th-actions">Aktionen</th>
+                </tr>
+              </thead>
+              <tbody id="initiative-list"></tbody>
+            </table>
+          </div>
+
+          <div id="empty-state" class="empty-state">
+            <span class="material-symbols-outlined empty-state__icon">swords</span>
+            <p class="empty-state__text">Die Arena ist leer. Füge Kombattanten hinzu.</p>
+          </div>
         </div>
-        <div id="search-results" class="search-results hidden"></div>
-      </div>
-
-      <!-- Manual add buttons -->
-      <div class="add-buttons">
-        <button id="add-player-btn" class="btn--add-player">+ Spieler</button>
-        <button id="manual-entry-btn" class="btn--manual-entry">Manuell</button>
-      </div>
-    </section>
-
-    <!-- Initiative Table -->
-    <div class="table-wrap">
-      <div class="table-scroll">
-        <table class="initiative-table">
-          <thead>
-            <tr>
-              <th class="th-indicator">▶</th>
-              <th>Name</th>
-              <th class="th-init">Init</th>
-              <th class="th-hp">TP</th>
-              <th class="th-ac">RK</th>
-              <th class="th-pp">Pass. W.</th>
-              <th class="th-actions">Aktionen</th>
-            </tr>
-          </thead>
-          <tbody id="initiative-list"></tbody>
-        </table>
-      </div>
-
-      <!-- Empty state -->
-      <div id="empty-state" class="empty-state">
-        <span class="material-symbols-outlined empty-state__icon">swords</span>
-        <p class="empty-state__text">Die Arena ist leer. Füge Kombattanten hinzu.</p>
-      </div>
+      </section>
     </div>
 
   </main>
@@ -228,79 +303,6 @@
           <button type="submit" class="btn--submit">Hinzufügen</button>
         </div>
       </form>
-    </div>
-  </div>
-
-  <!-- =========================================================================
-       SETTINGS MODAL
-       ========================================================================= -->
-  <div id="settings-modal" class="modal-overlay">
-    <div class="modal">
-      <div class="modal__header">
-        <h3 class="modal__title">Einstellungen</h3>
-        <button id="settings-close" class="modal__close">
-          <span class="material-symbols-outlined">close</span>
-        </button>
-      </div>
-      <div class="settings-body">
-        <!-- Automation -->
-        <div>
-          <p class="settings-group__label">Automatisierung</p>
-          <label class="settings-toggle">
-            <span class="settings-toggle__label">Automatische TP (Max. übernehmen)</span>
-            <input id="setting-auto-hp" type="checkbox" class="settings-checkbox" />
-          </label>
-          <label class="settings-toggle">
-            <span class="settings-toggle__label">Automatische Initiative würfeln</span>
-            <input id="setting-auto-init" type="checkbox" class="settings-checkbox" />
-          </label>
-        </div>
-        <!-- Naming convention -->
-        <div>
-          <p class="settings-group__label">Namenskonvention (Duplikate)</p>
-          <div class="settings-radio-group">
-            <label class="settings-radio">
-              <input type="radio" name="naming" value="numeric" id="naming-numeric" class="settings-radio__input" />
-              <span class="settings-radio__label">Numerisch — Goblin 1, Goblin 2</span>
-            </label>
-            <label class="settings-radio">
-              <input type="radio" name="naming" value="alphabetic" id="naming-alpha" class="settings-radio__input" />
-              <span class="settings-radio__label">Alphabetisch — Goblin A, Goblin B</span>
-            </label>
-            <label class="settings-radio">
-              <input type="radio" name="naming" value="adjective" id="naming-adj" class="settings-radio__input" />
-              <span class="settings-radio__label">Adjektive — Flinker Goblin, Wütender Goblin</span>
-            </label>
-          </div>
-        </div>
-        <div>
-          <p class="settings-group__label">Tie-Breaker (gleiche Initiative)</p>
-          <select id="setting-tie-breaker" class="settings-select">
-            <option value="name">Name (alphabetisch)</option>
-            <option value="dexterity">Geschicklichkeit (absteigend)</option>
-          </select>
-        </div>
-        <!-- Monster API -->
-        <div>
-          <p class="settings-group__label">Monster-API</p>
-          <select id="setting-monster-api" class="settings-select">
-            <option value="dnd5eapi">dnd5eapi.co</option>
-            <option value="open5e">open5e.com</option>
-          </select>
-          <p class="settings-note">Gilt für Suche und neue Monster-Imports.</p>
-        </div>
-        <!-- System (locked) -->
-        <div>
-          <p class="settings-group__label">Regelsystem</p>
-          <select disabled class="settings-select">
-            <option>D&amp;D 5e (2014) — SRD</option>
-          </select>
-          <p class="settings-note">Weitere Systeme in Planung.</p>
-        </div>
-      </div>
-      <div class="settings-footer">
-        <button id="settings-save" class="btn--save">Speichern</button>
-      </div>
     </div>
   </div>
 

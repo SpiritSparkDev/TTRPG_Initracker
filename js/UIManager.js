@@ -29,6 +29,7 @@ export class UIManager {
     this._searchDebounceTimer = null;
     this._monsterPreviewData = null;
     this._groupPoolDamageContext = null;
+    this._isSidebarCollapsed = false;
   }
 
   // ---------------------------------------------------------------------------
@@ -102,10 +103,7 @@ export class UIManager {
     ['settings-btn-sidebar', 'settings-btn-mobile', 'settings-btn-footer'].forEach(id => {
       this._on(id, 'click', () => this._openSettings());
     });
-    this._on('settings-close', 'click', () => this._closeSettings());
-    this._on('settings-modal', 'click', (e) => {
-      if (e.target.id === 'settings-modal') this._closeSettings();
-    });
+    this._on('sidebar-toggle', 'click', () => this._toggleSidebar());
     this._on('settings-save', 'click', () => this._saveSettings());
 
     // -- Monster search --
@@ -181,11 +179,12 @@ export class UIManager {
     this._renderStats(state);
     this._renderList(state);
     this._renderStartButton(state);
+    this._renderSettings(state.settings);
+    this._renderSidebarState();
   }
 
   _renderStats(state) {
     const roundText = state.isCombatActive ? String(state.round) : '–';
-    this._setText('round-display', roundText);
     this._setText('stat-round', roundText);
     this._setText('stat-total', String(state.combatants.length));
 
@@ -468,23 +467,50 @@ export class UIManager {
   // Settings modal
   // ---------------------------------------------------------------------------
 
-  _openSettings() {
-    const s = this.core.settings;
-    document.getElementById('setting-auto-hp').checked = s.autoHp;
-    document.getElementById('setting-auto-init').checked = s.autoInitiative;
+  _renderSettings(settings) {
+    const s = settings || this.core.settings;
+    const autoHp = document.getElementById('setting-auto-hp');
+    if (autoHp) autoHp.checked = Boolean(s.autoHp);
+    const autoInit = document.getElementById('setting-auto-init');
+    if (autoInit) autoInit.checked = Boolean(s.autoInitiative);
     const monsterApiSelect = document.getElementById('setting-monster-api');
     if (monsterApiSelect) monsterApiSelect.value = s.monsterApi || 'dnd5eapi';
     const tieBreakerSelect = document.getElementById('setting-tie-breaker');
     if (tieBreakerSelect) tieBreakerSelect.value = s.tieBreaker || 'name';
     const radio = document.querySelector(`input[name="naming"][value="${s.namingConvention}"]`);
     if (radio) radio.checked = true;
-    const modal = document.getElementById('settings-modal');
-    modal.classList.add('is-open');
   }
 
-  _closeSettings() {
-    const modal = document.getElementById('settings-modal');
-    modal.classList.remove('is-open');
+  _openSettings() {
+    this._setSidebarCollapsed(false);
+    this._renderSettings(this.core.settings);
+    const panel = document.getElementById('settings-panel');
+    panel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('setting-auto-hp')?.focus();
+  }
+
+  _toggleSidebar() {
+    this._setSidebarCollapsed(!this._isSidebarCollapsed);
+  }
+
+  _setSidebarCollapsed(isCollapsed) {
+    this._isSidebarCollapsed = Boolean(isCollapsed);
+    this._renderSidebarState();
+  }
+
+  _renderSidebarState() {
+    document.body.classList.toggle('layout--sidebar-collapsed', this._isSidebarCollapsed);
+
+    const toggle = document.getElementById('sidebar-toggle');
+    if (!toggle) return;
+
+    toggle.setAttribute('aria-expanded', String(!this._isSidebarCollapsed));
+    toggle.setAttribute('aria-label', this._isSidebarCollapsed ? 'Sidebar ausklappen' : 'Sidebar einklappen');
+
+    const icon = toggle.querySelector('.material-symbols-outlined');
+    if (icon) {
+      icon.textContent = this._isSidebarCollapsed ? 'right_panel_open' : 'left_panel_close';
+    }
   }
 
   _saveSettings() {
@@ -498,7 +524,6 @@ export class UIManager {
     };
     this.core.updateSettings(settingsPatch);
     if (this._onSettingsSaved) this._onSettingsSaved(this.core.settings);
-    this._closeSettings();
   }
 
   // ---------------------------------------------------------------------------
