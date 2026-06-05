@@ -229,7 +229,37 @@ export class UIManager {
     }
     empty?.classList.add('hidden');
 
-    tbody.innerHTML = state.combatants.map((c, idx) => this._buildRow(c, idx, state)).join('');
+    const livingEntries = [];
+    const deadEntries = [];
+
+    state.combatants.forEach((c, idx) => {
+      const entry = { c, idx };
+      if ((Number(c.hp) || 0) <= 0) {
+        deadEntries.push(entry);
+      } else {
+        livingEntries.push(entry);
+      }
+    });
+
+    const html = [];
+    html.push(...livingEntries.map(({ c, idx }) => this._buildRow(c, idx, state)));
+
+    if (deadEntries.length > 0) {
+      if (livingEntries.length > 0) {
+        html.push(this._buildSectionRow('Gefallene Kombatanten'));
+      }
+      html.push(...deadEntries.map(({ c, idx }) => this._buildRow(c, idx, state)));
+    }
+
+    tbody.innerHTML = html.join('');
+  }
+
+  _buildSectionRow(label) {
+    return `
+      <tr class="initiative-section-row" aria-hidden="true">
+        <td class="initiative-section-cell" colspan="7">${this._esc(label)}</td>
+      </tr>
+    `;
   }
 
   _buildRow(c, idx, state) {

@@ -299,7 +299,8 @@ export class CombatTrackerCore {
     // First ordering happens when combat starts.
     this.sortByInitiative();
     this.round = 1;
-    this.activeIndex = 0;
+    const firstLiving = this._findNextLivingIndex(-1);
+    this.activeIndex = firstLiving !== -1 ? firstLiving : 0;
     this.isCombatActive = true;
     this._save();
     this._notify();
@@ -312,13 +313,38 @@ export class CombatTrackerCore {
    */
   nextTurn() {
     if (!this.isCombatActive || this.combatants.length === 0) return;
-    this.activeIndex++;
-    if (this.activeIndex >= this.combatants.length) {
-      this.activeIndex = 0;
+    const prevIndex = this.activeIndex;
+    const nextLiving = this._findNextLivingIndex(prevIndex);
+
+    // All combatants are at 0 HP: keep combat state but no active turn target.
+    if (nextLiving === -1) {
+      this.activeIndex = -1;
+      this._save();
+      this._notify();
+      return;
+    }
+
+    this.activeIndex = nextLiving;
+    if (prevIndex >= 0 && nextLiving <= prevIndex) {
       this.round++;
     }
+
     this._save();
     this._notify();
+  }
+
+  /**
+   * Returns the next combatant index with HP > 0, wrapping around list bounds.
+   * @param {number} fromIndex - Start position (exclusive)
+   * @returns {number} Index of the next living combatant, or -1 if none exist
+   */
+  _findNextLivingIndex(fromIndex) {
+    if (this.combatants.length === 0) return -1;
+    for (let step = 1; step <= this.combatants.length; step++) {
+      const idx = (fromIndex + step + this.combatants.length) % this.combatants.length;
+      if ((Number(this.combatants[idx]?.hp) || 0) > 0) return idx;
+    }
+    return -1;
   }
 
   /**

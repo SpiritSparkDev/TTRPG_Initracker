@@ -937,6 +937,20 @@ input, select, textarea {
   color: var(--clr-on-surface-variant);
 }
 
+.initiative-section-row {
+  border-bottom: 1px solid var(--clr-outline-variant);
+}
+
+.initiative-section-cell {
+  padding: 0.55rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--clr-on-surface-variant);
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.16), rgba(239, 68, 68, 0.04));
+}
+
 /* Table cells */
 .td-indicator {
   padding: 0.75rem 1rem;
