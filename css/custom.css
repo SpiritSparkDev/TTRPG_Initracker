@@ -1564,6 +1564,29 @@ body.layout--drawer-open .table-wrap--initiative-panel {
   color: var(--clr-outline);
 }
 
+.app-version-badge {
+  position: fixed;
+  right: 0.85rem;
+  bottom: 4.9rem;
+  z-index: 30;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--clr-outline-variant);
+  background-color: rgba(31, 36, 48, 0.88);
+  color: var(--clr-on-surface-variant);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .app-version-badge {
+    bottom: 0.85rem;
+  }
+}
+
 /* ---------------------------------------------------------------------------
    Privacy Banner
    --------------------------------------------------------------------------- */
