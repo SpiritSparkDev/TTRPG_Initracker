@@ -8,6 +8,8 @@
 import { StorageManager }      from './StorageManager.js';
 import { SystemAdapter5e }     from './SystemAdapter5e.js';
 import { SystemAdapterOpen5e } from './SystemAdapterOpen5e.js';
+import { I18nManager }         from './I18nManager.js';
+import { APP_VERSION }         from './AppConfig.js';
 import { CombatTrackerCore }   from './CombatTrackerCore.js';
 import { ExportImportManager } from './ExportImportManager.js';
 import { UIManager }           from './UIManager.js';
@@ -15,7 +17,7 @@ import { UIManager }           from './UIManager.js';
 // ---------------------------------------------------------------------------
 // Bootstrap
 // ---------------------------------------------------------------------------
-(function init() {
+(async function init() {
   // 1. Instantiate modules
   const storage    = StorageManager;          // static class
   const adapters   = {
@@ -23,7 +25,8 @@ import { UIManager }           from './UIManager.js';
     open5e: new SystemAdapterOpen5e(),
   };
   const core       = new CombatTrackerCore();
-  const exportMgr  = new ExportImportManager();
+  const i18n       = new I18nManager(storage);
+  const exportMgr  = new ExportImportManager(i18n);
   const resolveAdapter = (source) => adapters[source] || adapters.dnd5eapi;
   const ui = new UIManager(
     core,
@@ -37,6 +40,7 @@ import { UIManager }           from './UIManager.js';
           console.warn('[main] Monster list could not be pre-fetched after API switch.');
         });
       },
+      i18n,
     },
   );
 
@@ -46,6 +50,16 @@ import { UIManager }           from './UIManager.js';
   // 3. Restore persisted state (or start fresh)
   core.loadFromStorage();
   ui.adapter = resolveAdapter(core.settings.monsterApi);
+
+  // 3b. Resolve language (saved setting -> browser language fallback)
+  const resolvedLang = await i18n.init(core.settings.language);
+  if (core.settings.language !== resolvedLang) {
+    core.updateSettings({ language: resolvedLang });
+  }
+  i18n.applyToDocument();
+
+  const versionEl = document.getElementById('app-version');
+  if (versionEl) versionEl.textContent = i18n.t('version.badge', { version: APP_VERSION });
 
   // 4. Bind all event listeners
   ui.bindEvents();
@@ -60,4 +74,6 @@ import { UIManager }           from './UIManager.js';
 
   // 7. Privacy banner
   ui.showPrivacyBanner(storage);
-})();
+})().catch((err) => {
+  console.error('[main] Bootstrap failed:', err);
+});

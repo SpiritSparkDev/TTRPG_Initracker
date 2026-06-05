@@ -1,5 +1,5 @@
 # 5e Initiative Tracker
-v1.0.2
+v1.1.0
 
 Ein modularer, clientseitiger Initiative-Tracker für D&D 5e (SRD 2014) mit API-gestütztem Monster-Import, LocalStorage-Persistenz und Fokus auf schnellen Spieltisch-Workflow.
 

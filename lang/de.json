@@ -1,0 +1,182 @@
+{
+  "app": {
+    "title": "Initiative Tracker"
+  },
+  "version": {
+    "badge": "v{version}"
+  },
+  "sidebar": {
+    "meta": "Steuerung und Kampfstatus liegen jetzt zentral im Hauptbereich.",
+    "settings_title": "Einstellungen",
+    "focus": "Fokus",
+    "aria": {
+      "collapse": "Sidebar einklappen",
+      "expand": "Sidebar ausklappen"
+    }
+  },
+  "settings": {
+    "automation": "Automatisierung",
+    "auto_hp": "Automatische TP (Max. übernehmen)",
+    "auto_init": "Automatische Initiative würfeln",
+    "naming": "Namenskonvention (Duplikate)",
+    "naming_numeric": "Numerisch — Goblin 1, Goblin 2",
+    "naming_alpha": "Alphabetisch — Goblin A, Goblin B",
+    "naming_adj": "Adjektive — Flinker Goblin, Wütender Goblin",
+    "tie_breaker": "Tie-Breaker (gleiche Initiative)",
+    "tie_name": "Name (alphabetisch)",
+    "tie_dex": "Geschicklichkeit (absteigend)",
+    "monster_api": "Monster-API",
+    "monster_api_note": "Gilt für Suche und neue Monster-Imports.",
+    "system": "Regelsystem",
+    "system_label": "D&D 5e (2014) — SRD",
+    "system_note": "Weitere Systeme in Planung.",
+    "language": "Sprache",
+    "lang_de": "Deutsch",
+    "lang_en": "Englisch",
+    "save": "Speichern"
+  },
+  "footer": {
+    "import": "Importieren",
+    "export_pcs": "Nur SCs exportieren",
+    "export_combat": "Kampf exportieren",
+    "open_settings": "Einstellungen",
+    "note": "Initiative Tracker — System Reference Document 5.1 / D&D 5e 2014. Nutzt dnd5eapi.co und open5e.com als optionale Monster-APIs."
+  },
+  "combat": {
+    "control": "Kampfkontrolle",
+    "round": "Runde",
+    "start": "Kampf starten",
+    "next_turn": "Nächster Zug",
+    "end": "Kampf beenden",
+    "reset": "Zurücksetzen",
+    "combatants": "Kombattanten",
+    "active": "Aktiv",
+    "waiting": "Warte…",
+    "ready": "Bereit",
+    "confirm_reset": "Alle Kombattanten entfernen und den Kampf zurücksetzen?",
+    "confirm_end_clear": "Kampf beenden und alle Monster/NSCs aus der Initiative entfernen?"
+  },
+  "search": {
+    "placeholder": "Suchen",
+    "no_results": "Keine Monster gefunden für „{query}“.",
+    "api_unreachable": "API nicht erreichbar",
+    "retry": "Erneut versuchen"
+  },
+  "import_export": {
+    "no_file": "Keine Datei ausgewählt.",
+    "invalid_file": "Ungültige Datei. Bitte eine .json-Datei hochladen.",
+    "read_failed": "Datei konnte nicht gelesen werden.",
+    "invalid_json": "Kein gültiges JSON-Objekt.",
+    "missing_combatants": "Fehlende \"combatants\"-Liste im Import."
+  },
+  "entry": {
+    "add_combatant": "+ Kombattant hinzufügen"
+  },
+  "table": {
+    "eyebrow": "Initiative",
+    "title": "Aktive Reihenfolge und Status",
+    "col_name": "Name",
+    "col_init": "Init",
+    "col_hp": "TP",
+    "col_ac": "RK",
+    "col_pp": "Pass. W.",
+    "col_actions": "Aktionen",
+    "empty": "Die Arena ist leer. Füge Kombattanten hinzu.",
+    "dead_section": "Gefallene Kombatanten",
+    "group_x": "Gruppe x{count}",
+    "pools": "Pools: {count}",
+    "hp_suffix": "TP"
+  },
+  "types": {
+    "sc": "SC",
+    "ally": "Verbündete",
+    "special": "Spezial",
+    "monster": "Monster",
+    "npc": "NSC"
+  },
+  "actions": {
+    "details": "Details",
+    "remove": "Entfernen",
+    "revive": "Wiederbeleben",
+    "remove_permanent": "Endgültig entfernen",
+    "damage_on": "Schaden auf {name} anwenden"
+  },
+  "bottom_nav": {
+    "settings": "Einstellungen",
+    "import": "Importieren",
+    "pcs": "Nur SCs",
+    "all": "Alles"
+  },
+  "privacy": {
+    "text_html": "<strong>Datenschutzhinweis:</strong> Diese App speichert Spieldaten ausschließlich lokal in deinem Browser (<code class=\"privacy-banner__code\">LocalStorage</code>). Es werden keine Daten an Server übertragen.",
+    "dismiss": "Verstanden"
+  },
+  "manual": {
+    "title": "Kombattant hinzufügen",
+    "name": "Name",
+    "type": "Typ",
+    "type_sc": "SC",
+    "type_ally": "Verbündete",
+    "type_monster": "Monster",
+    "type_special": "Spezial",
+    "initiative": "Initiative",
+    "hp": "Trefferpunkte",
+    "ac": "Rüstungsklasse",
+    "pp": "Pass. Wahrnehmung",
+    "cancel": "Abbrechen",
+    "add": "Hinzufügen",
+    "error_name": "Bitte einen Namen eingeben."
+  },
+  "hp_modal": {
+    "title": "Trefferpunkte anpassen",
+    "damage": "Schaden (abziehen)",
+    "heal": "Heilung (addieren)",
+    "current": "Aktuelle TP",
+    "max": "Maximale TP",
+    "group_pools": "TP-Pools der Gruppe",
+    "cancel": "Abbrechen",
+    "apply": "Anwenden",
+    "error_max": "Maximale TP müssen größer als 0 sein."
+  },
+  "group_damage": {
+    "title": "Schaden auf {pool}",
+    "meta": "Aktuell: {hp} TP",
+    "damage": "Schaden",
+    "cancel": "Abbrechen",
+    "apply": "Anwenden",
+    "error_positive": "Bitte eine gültige positive Zahl eingeben.",
+    "pool_label": "Pool {index}"
+  },
+  "monster_add": {
+    "title": "Monster hinzufügen",
+    "title_prepare": "{name} vorbereiten",
+    "name": "Name",
+    "count": "Anzahl",
+    "initiative": "Initiative",
+    "hp_per": "TP pro Monster",
+    "ac": "Rüstungsklasse",
+    "pp": "Passive Wahrnehmung",
+    "as_group": "Als Gruppe (gemeinsame Initiative, mehrere TP-Pools)",
+    "saves": "Rettungswürfe",
+    "special": "Besondere Fähigkeiten",
+    "actions": "Aktionen",
+    "cancel": "Abbrechen",
+    "submit": "Zur Initiative hinzufügen"
+  },
+  "drawer": {
+    "saving_throws": "Rettungswürfe",
+    "special": "Besondere Fähigkeiten",
+    "actions": "Aktionen",
+    "legendary": "Legendäre Aktionen",
+    "fallback_initiative": "Initiative",
+    "fallback_max_hp": "Max. TP",
+    "fallback_ac": "Rüstungsklasse",
+    "fallback_pp": "Passive Wahrnehmung"
+  },
+  "errors": {
+    "import_failed": "Import fehlgeschlagen: {message}"
+  },
+  "common": {
+    "none": "—"
+  }
+}

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Initiative Tracker</title>
+  <title data-i18n="app.title">Initiative Tracker</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -31,86 +31,94 @@
           class="sidebar__toggle"
           type="button"
           aria-label="Sidebar einklappen"
+          data-i18n-aria-label="sidebar.aria.collapse"
           aria-expanded="true"
         >
           <span class="material-symbols-outlined">left_panel_close</span>
         </button>
       </div>
-      <p class="sidebar__meta">Steuerung und Kampfstatus liegen jetzt zentral im Hauptbereich.</p>
+      <p class="sidebar__meta" data-i18n="sidebar.meta">Steuerung und Kampfstatus liegen jetzt zentral im Hauptbereich.</p>
     </div>
 
     <div id="settings-panel" class="sidebar__section sidebar__section--settings">
       <div class="sidebar__section-head">
-        <h2 class="sidebar__section-title">Einstellungen</h2>
+        <h2 class="sidebar__section-title" data-i18n="sidebar.settings_title">Einstellungen</h2>
         <button id="settings-btn-sidebar" class="sidebar__btn sidebar__btn--inline" type="button">
-          <span class="material-symbols-outlined">settings</span> Fokus
+          <span class="material-symbols-outlined">settings</span> <span data-i18n="sidebar.focus">Fokus</span>
         </button>
       </div>
       <div class="settings-body settings-body--sidebar">
         <div>
-          <p class="settings-group__label">Automatisierung</p>
+          <p class="settings-group__label" data-i18n="settings.automation">Automatisierung</p>
           <label class="settings-toggle">
-            <span class="settings-toggle__label">Automatische TP (Max. übernehmen)</span>
+            <span class="settings-toggle__label" data-i18n="settings.auto_hp">Automatische TP (Max. übernehmen)</span>
             <input id="setting-auto-hp" type="checkbox" class="settings-checkbox" />
           </label>
           <label class="settings-toggle">
-            <span class="settings-toggle__label">Automatische Initiative würfeln</span>
+            <span class="settings-toggle__label" data-i18n="settings.auto_init">Automatische Initiative würfeln</span>
             <input id="setting-auto-init" type="checkbox" class="settings-checkbox" />
           </label>
         </div>
         <div>
-          <p class="settings-group__label">Namenskonvention (Duplikate)</p>
+          <p class="settings-group__label" data-i18n="settings.naming">Namenskonvention (Duplikate)</p>
           <select id="setting-naming-convention" class="settings-select">
-            <option value="numeric">Numerisch — Goblin 1, Goblin 2</option>
-            <option value="alphabetic">Alphabetisch — Goblin A, Goblin B</option>
-            <option value="adjective">Adjektive — Flinker Goblin, Wütender Goblin</option>
+            <option value="numeric" data-i18n="settings.naming_numeric">Numerisch — Goblin 1, Goblin 2</option>
+            <option value="alphabetic" data-i18n="settings.naming_alpha">Alphabetisch — Goblin A, Goblin B</option>
+            <option value="adjective" data-i18n="settings.naming_adj">Adjektive — Flinker Goblin, Wütender Goblin</option>
           </select>
         </div>
         <div>
-          <p class="settings-group__label">Tie-Breaker (gleiche Initiative)</p>
+          <p class="settings-group__label" data-i18n="settings.tie_breaker">Tie-Breaker (gleiche Initiative)</p>
           <select id="setting-tie-breaker" class="settings-select">
-            <option value="name">Name (alphabetisch)</option>
-            <option value="dexterity">Geschicklichkeit (absteigend)</option>
+            <option value="name" data-i18n="settings.tie_name">Name (alphabetisch)</option>
+            <option value="dexterity" data-i18n="settings.tie_dex">Geschicklichkeit (absteigend)</option>
           </select>
         </div>
         <div>
-          <p class="settings-group__label">Monster-API</p>
+          <p class="settings-group__label" data-i18n="settings.monster_api">Monster-API</p>
           <select id="setting-monster-api" class="settings-select">
             <option value="dnd5eapi">dnd5eapi.co</option>
             <option value="open5e">open5e.com</option>
           </select>
-          <p class="settings-note">Gilt für Suche und neue Monster-Imports.</p>
+          <p class="settings-note" data-i18n="settings.monster_api_note">Gilt für Suche und neue Monster-Imports.</p>
         </div>
         <div>
-          <p class="settings-group__label">Regelsystem</p>
-          <select disabled class="settings-select">
-            <option>D&amp;D 5e (2014) — SRD</option>
+          <p class="settings-group__label" data-i18n="settings.language">Sprache</p>
+          <select id="setting-language" class="settings-select">
+            <option value="de" data-i18n="settings.lang_de">Deutsch</option>
+            <option value="en" data-i18n="settings.lang_en">Englisch</option>
           </select>
-          <p class="settings-note">Weitere Systeme in Planung.</p>
+        </div>
+        <div>
+          <p class="settings-group__label" data-i18n="settings.system">Regelsystem</p>
+          <select disabled class="settings-select">
+            <option data-i18n="settings.system_label">D&amp;D 5e (2014) — SRD</option>
+          </select>
+          <p class="settings-note" data-i18n="settings.system_note">Weitere Systeme in Planung.</p>
         </div>
       </div>
       <div class="settings-footer settings-footer--sidebar">
-        <button id="settings-save" class="btn--save" type="button">Speichern</button>
+        <button id="settings-save" class="btn--save" type="button" data-i18n="settings.save">Speichern</button>
       </div>
     </div>
 
     <div class="sidebar__footer">
       <div class="footer-bar__links">
         <label for="import-file-input-desktop" class="footer-bar__link">
-          <span class="material-symbols-outlined">upload_file</span> Importieren
+          <span class="material-symbols-outlined">upload_file</span> <span data-i18n="footer.import">Importieren</span>
         </label>
         <input id="import-file-input-desktop" type="file" accept=".json,application/json" class="hidden" />
         <button id="export-pcs-btn-desktop" class="footer-bar__link">
-          <span class="material-symbols-outlined">download</span> Nur SCs exportieren
+          <span class="material-symbols-outlined">download</span> <span data-i18n="footer.export_pcs">Nur SCs exportieren</span>
         </button>
         <button id="export-all-btn-desktop" class="footer-bar__link">
-          <span class="material-symbols-outlined">save</span> Kampf exportieren
+          <span class="material-symbols-outlined">save</span> <span data-i18n="footer.export_combat">Kampf exportieren</span>
         </button>
         <button id="settings-btn-footer" class="footer-bar__link">
-          <span class="material-symbols-outlined">settings</span> Einstellungen
+          <span class="material-symbols-outlined">settings</span> <span data-i18n="footer.open_settings">Einstellungen</span>
         </button>
       </div>
-      <p class="footer-bar__note">Initiative Tracker — System Reference Document 5.1 / D&amp;D 5e 2014. Nutzt dnd5eapi.co und open5e.com als optionale Monster-APIs.</p>
+      <p class="footer-bar__note" data-i18n="footer.note">Initiative Tracker — System Reference Document 5.1 / D&amp;D 5e 2014. Nutzt dnd5eapi.co und open5e.com als optionale Monster-APIs.</p>
     </div>
   </aside>
 
@@ -122,29 +130,29 @@
       <section class="app-main__left-column">
         <section class="combat-hub">
           <div class="combat-hub__intro">
-            <p class="combat-hub__eyebrow">Kampfkontrolle</p>
+            <p class="combat-hub__eyebrow" data-i18n="combat.control">Kampfkontrolle</p>
             <div class="combat-hub__round">
-              <span class="combat-hub__round-label">Runde</span>
+              <span class="combat-hub__round-label" data-i18n="combat.round">Runde</span>
               <span id="stat-round" class="combat-hub__round-value">–</span>
             </div>
           </div>
           <div class="combat-hub__actions">
             <button id="start-combat-btn" class="btn--start-combat combat-hub__primary-action">
-              <span class="material-symbols-outlined">play_arrow</span> Kampf starten
+              <span class="material-symbols-outlined">play_arrow</span> <span data-i18n="combat.start">Kampf starten</span>
             </button>
-            <button id="next-turn-btn" class="btn btn--primary combat-hub__action-btn">Nächster Zug</button>
-            <button id="end-combat-btn" class="btn btn--ghost combat-hub__action-btn">Kampf beenden</button>
-            <button id="reset-btn" class="btn btn--ghost combat-hub__action-btn">Zurücksetzen</button>
+            <button id="next-turn-btn" class="btn btn--primary combat-hub__action-btn" data-i18n="combat.next_turn">Nächster Zug</button>
+            <button id="end-combat-btn" class="btn btn--ghost combat-hub__action-btn" data-i18n="combat.end">Kampf beenden</button>
+            <button id="reset-btn" class="btn btn--ghost combat-hub__action-btn" data-i18n="combat.reset">Zurücksetzen</button>
           </div>
         </section>
 
         <header class="stats-grid stats-grid--summary">
           <div class="stat-card">
-            <span class="stat-card__label">Kombattanten</span>
+            <span class="stat-card__label" data-i18n="combat.combatants">Kombattanten</span>
             <span id="stat-total" class="stat-card__value">0</span>
           </div>
           <div class="stat-card">
-            <span class="stat-card__label">Aktiv</span>
+            <span class="stat-card__label" data-i18n="combat.active">Aktiv</span>
             <span id="stat-active" class="stat-card__value--active">Warte…</span>
           </div>
         </header>
@@ -158,6 +166,7 @@
                 type="text"
                 autocomplete="off"
                 placeholder="Suchen"
+                data-i18n-placeholder="search.placeholder"
                 class="search-input"
               />
               <span id="search-loading" class="material-symbols-outlined search-loading hidden">progress_activity</span>
@@ -166,7 +175,7 @@
           </div>
 
           <div class="add-buttons">
-              <button id="add-combatant-btn" class="btn--add-combatant">+ Kombattant hinzufügen</button>
+              <button id="add-combatant-btn" class="btn--add-combatant" data-i18n="entry.add_combatant">+ Kombattant hinzufügen</button>
           </div>
         </section>
       </section>
@@ -174,20 +183,20 @@
       <section class="app-main__right-column">
         <div class="table-wrap table-wrap--initiative-panel">
           <div class="table-wrap__header">
-            <p class="table-wrap__eyebrow">Initiative</p>
-            <p class="table-wrap__title">Aktive Reihenfolge und Status</p>
+            <p class="table-wrap__eyebrow" data-i18n="table.eyebrow">Initiative</p>
+            <p class="table-wrap__title" data-i18n="table.title">Aktive Reihenfolge und Status</p>
           </div>
           <div class="table-scroll">
             <table class="initiative-table">
               <thead>
                 <tr>
                   <th class="th-indicator">▶</th>
-                  <th>Name</th>
-                  <th class="th-init">Init</th>
-                  <th class="th-hp">TP</th>
-                  <th class="th-ac">RK</th>
-                  <th class="th-pp">Pass. W.</th>
-                  <th class="th-actions">Aktionen</th>
+                  <th data-i18n="table.col_name">Name</th>
+                  <th class="th-init" data-i18n="table.col_init">Init</th>
+                  <th class="th-hp" data-i18n="table.col_hp">TP</th>
+                  <th class="th-ac" data-i18n="table.col_ac">RK</th>
+                  <th class="th-pp" data-i18n="table.col_pp">Pass. W.</th>
+                  <th class="th-actions" data-i18n="table.col_actions">Aktionen</th>
                 </tr>
               </thead>
               <tbody id="initiative-list"></tbody>
@@ -196,7 +205,7 @@
 
           <div id="empty-state" class="empty-state">
             <span class="material-symbols-outlined empty-state__icon">swords</span>
-            <p class="empty-state__text">Die Arena ist leer. Füge Kombattanten hinzu.</p>
+            <p class="empty-state__text" data-i18n="table.empty">Die Arena ist leer. Füge Kombattanten hinzu.</p>
           </div>
         </div>
       </section>
@@ -224,17 +233,17 @@
        ========================================================================= -->
   <nav class="bottom-nav">
     <button id="settings-btn-mobile" class="bottom-nav__btn">
-      <span class="material-symbols-outlined">settings</span>Einstellungen
+      <span class="material-symbols-outlined">settings</span><span data-i18n="bottom_nav.settings">Einstellungen</span>
     </button>
     <label for="import-file-input" class="bottom-nav__import-label">
-      <span class="material-symbols-outlined">upload_file</span>Importieren
+      <span class="material-symbols-outlined">upload_file</span><span data-i18n="bottom_nav.import">Importieren</span>
     </label>
     <input id="import-file-input" type="file" accept=".json,application/json" class="hidden" />
     <button id="export-pcs-btn" class="bottom-nav__btn">
-      <span class="material-symbols-outlined">download</span>Nur SCs
+      <span class="material-symbols-outlined">download</span><span data-i18n="bottom_nav.pcs">Nur SCs</span>
     </button>
     <button id="export-all-btn" class="bottom-nav__btn">
-      <span class="material-symbols-outlined">save</span>Alles
+      <span class="material-symbols-outlined">save</span><span data-i18n="bottom_nav.all">Alles</span>
     </button>
   </nav>
 
@@ -242,59 +251,59 @@
        PRIVACY BANNER
        ========================================================================= -->
   <div id="privacy-banner" class="hidden">
-    <p class="privacy-banner__text">
+    <p class="privacy-banner__text" data-i18n-html="privacy.text_html">
       <strong>Datenschutzhinweis:</strong> Diese App speichert Spieldaten ausschließlich lokal in deinem Browser
       (<code class="privacy-banner__code">LocalStorage</code>). Es werden keine Daten an Server übertragen.
     </p>
-    <button id="privacy-dismiss-btn" class="btn--privacy-dismiss">Verstanden</button>
+    <button id="privacy-dismiss-btn" class="btn--privacy-dismiss" data-i18n="privacy.dismiss">Verstanden</button>
   </div>
 
-  <div id="app-version" class="app-version-badge" aria-label="App-Version">v1.0.2</div>
+  <div id="app-version" class="app-version-badge" aria-label="App-Version" data-i18n-aria-label="app.title">v…</div>
 
   <!-- =========================================================================
        MANUAL ENTRY MODAL
        ========================================================================= -->
   <div id="modal-overlay" class="modal-overlay">
     <div class="modal">
-      <h3 id="modal-title" class="modal__title">Kombattant hinzufügen</h3>
+      <h3 id="modal-title" class="modal__title" data-i18n="manual.title">Kombattant hinzufügen</h3>
       <form id="manual-form" class="modal__form" novalidate>
         <div class="form-field">
-          <label class="form-label" for="m-name">Name</label>
+          <label class="form-label" for="m-name" data-i18n="manual.name">Name</label>
           <input id="m-name" type="text" required class="form-input" />
         </div>
         <div class="form-field">
-          <label class="form-label" for="m-combatant-type">Typ</label>
+          <label class="form-label" for="m-combatant-type" data-i18n="manual.type">Typ</label>
           <select id="m-combatant-type" class="form-input form-select">
-            <option value="sc" selected>SC</option>
-            <option value="ally">Verbündete</option>
-            <option value="monster">Monster</option>
-            <option value="special">Spezial</option>
+            <option value="sc" selected data-i18n="manual.type_sc">SC</option>
+            <option value="ally" data-i18n="manual.type_ally">Verbündete</option>
+            <option value="monster" data-i18n="manual.type_monster">Monster</option>
+            <option value="special" data-i18n="manual.type_special">Spezial</option>
           </select>
         </div>
         <div class="form-grid-2">
           <div class="form-field">
-            <label class="form-label" for="m-init">Initiative</label>
+            <label class="form-label" for="m-init" data-i18n="manual.initiative">Initiative</label>
             <input id="m-init" type="number" class="form-input form-input--mono" />
           </div>
           <div class="form-field">
-            <label class="form-label" for="m-hp">Trefferpunkte</label>
+            <label class="form-label" for="m-hp" data-i18n="manual.hp">Trefferpunkte</label>
             <input id="m-hp" type="number" min="0" class="form-input form-input--mono" />
           </div>
         </div>
         <div class="form-grid-2">
           <div class="form-field">
-            <label class="form-label" for="m-ac">Rüstungsklasse</label>
+            <label class="form-label" for="m-ac" data-i18n="manual.ac">Rüstungsklasse</label>
             <input id="m-ac" type="number" min="0" class="form-input form-input--mono" />
           </div>
           <div class="form-field">
-            <label class="form-label" for="m-pp">Pass. Wahrnehmung</label>
+            <label class="form-label" for="m-pp" data-i18n="manual.pp">Pass. Wahrnehmung</label>
             <input id="m-pp" type="number" min="0" class="form-input form-input--mono" />
           </div>
         </div>
         <div id="modal-error" class="form-error hidden"></div>
         <div class="modal__actions">
-          <button type="button" id="modal-cancel" class="btn--cancel">Abbrechen</button>
-          <button type="submit" class="btn--submit">Hinzufügen</button>
+          <button type="button" id="modal-cancel" class="btn--cancel" data-i18n="manual.cancel">Abbrechen</button>
+          <button type="submit" class="btn--submit" data-i18n="manual.add">Hinzufügen</button>
         </div>
       </form>
     </div>
@@ -306,7 +315,7 @@
   <div id="hp-modal" class="modal-overlay">
     <div class="modal">
       <div class="modal__header">
-        <h3 class="modal__title">Trefferpunkte anpassen</h3>
+        <h3 class="modal__title" data-i18n="hp_modal.title">Trefferpunkte anpassen</h3>
         <button id="hp-modal-close" class="modal__close">
           <span class="material-symbols-outlined">close</span>
         </button>
@@ -315,32 +324,32 @@
         <input type="hidden" id="hp-modal-id" />
         <div class="form-grid-2">
           <div class="form-field">
-            <label class="form-label" for="hp-damage">Schaden (abziehen)</label>
+            <label class="form-label" for="hp-damage" data-i18n="hp_modal.damage">Schaden (abziehen)</label>
             <input id="hp-damage" type="number" min="0" value="0" class="form-input form-input--mono" />
           </div>
           <div class="form-field">
-            <label class="form-label" for="hp-heal">Heilung (addieren)</label>
+            <label class="form-label" for="hp-heal" data-i18n="hp_modal.heal">Heilung (addieren)</label>
             <input id="hp-heal" type="number" min="0" value="0" class="form-input form-input--mono" />
           </div>
         </div>
         <div class="form-grid-2">
           <div class="form-field">
-            <label class="form-label" for="hp-current">Aktuelle TP</label>
+            <label class="form-label" for="hp-current" data-i18n="hp_modal.current">Aktuelle TP</label>
             <input id="hp-current" type="number" min="0" class="form-input form-input--mono" />
           </div>
           <div class="form-field">
-            <label class="form-label" for="hp-max">Maximale TP</label>
+            <label class="form-label" for="hp-max" data-i18n="hp_modal.max">Maximale TP</label>
             <input id="hp-max" type="number" min="0" class="form-input form-input--mono" />
           </div>
         </div>
         <div id="hp-pools-wrap" class="hidden">
-          <p class="settings-group__label">TP-Pools der Gruppe</p>
+          <p class="settings-group__label" data-i18n="hp_modal.group_pools">TP-Pools der Gruppe</p>
           <div id="hp-pools-grid" class="hp-pools-grid"></div>
         </div>
         <div id="hp-modal-error" class="form-error hidden"></div>
         <div class="modal__actions">
-          <button type="button" id="hp-modal-cancel" class="btn--cancel">Abbrechen</button>
-          <button type="submit" class="btn--submit">Anwenden</button>
+          <button type="button" id="hp-modal-cancel" class="btn--cancel" data-i18n="hp_modal.cancel">Abbrechen</button>
+          <button type="submit" class="btn--submit" data-i18n="hp_modal.apply">Anwenden</button>
         </div>
       </form>
     </div>
@@ -360,13 +369,13 @@
       <form id="group-pool-damage-form" class="modal__form" novalidate>
         <p id="group-pool-damage-meta" class="modal__meta"></p>
         <div class="form-field">
-          <label class="form-label" for="group-pool-damage-amount">Schaden</label>
+          <label class="form-label" for="group-pool-damage-amount" data-i18n="group_damage.damage">Schaden</label>
           <input id="group-pool-damage-amount" type="number" min="0" value="0" class="form-input form-input--mono" />
         </div>
         <div id="group-pool-damage-error" class="form-error hidden"></div>
         <div class="modal__actions">
-          <button type="button" id="group-pool-damage-cancel" class="btn--cancel">Abbrechen</button>
-          <button type="submit" class="btn--submit">Anwenden</button>
+          <button type="button" id="group-pool-damage-cancel" class="btn--cancel" data-i18n="group_damage.cancel">Abbrechen</button>
+          <button type="submit" class="btn--submit" data-i18n="group_damage.apply">Anwenden</button>
         </div>
       </form>
     </div>
@@ -378,7 +387,7 @@
   <div id="monster-add-modal" class="modal-overlay">
     <div class="modal modal--wide">
       <div class="modal__header">
-        <h3 id="monster-add-title" class="modal__title">Monster hinzufügen</h3>
+        <h3 id="monster-add-title" class="modal__title" data-i18n="monster_add.title">Monster hinzufügen</h3>
         <button id="monster-add-close" class="modal__close">
           <span class="material-symbols-outlined">close</span>
         </button>
@@ -387,57 +396,57 @@
         <input type="hidden" id="monster-add-index" />
         <div class="form-grid-2">
           <div class="form-field">
-            <label class="form-label" for="monster-add-name">Name</label>
+            <label class="form-label" for="monster-add-name" data-i18n="monster_add.name">Name</label>
             <input id="monster-add-name" type="text" class="form-input" />
           </div>
           <div class="form-field">
-            <label class="form-label" for="monster-add-count">Anzahl</label>
+            <label class="form-label" for="monster-add-count" data-i18n="monster_add.count">Anzahl</label>
             <input id="monster-add-count" type="number" min="1" value="1" class="form-input form-input--mono" />
           </div>
         </div>
         <div class="form-grid-2">
           <div class="form-field">
-            <label class="form-label" for="monster-add-init">Initiative</label>
+            <label class="form-label" for="monster-add-init" data-i18n="monster_add.initiative">Initiative</label>
             <input id="monster-add-init" type="number" class="form-input form-input--mono" />
           </div>
           <div class="form-field">
-            <label class="form-label" for="monster-add-hp">TP pro Monster</label>
+            <label class="form-label" for="monster-add-hp" data-i18n="monster_add.hp_per">TP pro Monster</label>
             <input id="monster-add-hp" type="number" min="0" class="form-input form-input--mono" />
           </div>
         </div>
         <div class="form-grid-2">
           <div class="form-field">
-            <label class="form-label" for="monster-add-ac">Rüstungsklasse</label>
+            <label class="form-label" for="monster-add-ac" data-i18n="monster_add.ac">Rüstungsklasse</label>
             <input id="monster-add-ac" type="number" min="0" class="form-input form-input--mono" />
           </div>
           <div class="form-field">
-            <label class="form-label" for="monster-add-pp">Passive Wahrnehmung</label>
+            <label class="form-label" for="monster-add-pp" data-i18n="monster_add.pp">Passive Wahrnehmung</label>
             <input id="monster-add-pp" type="number" min="0" class="form-input form-input--mono" />
           </div>
         </div>
         <div class="form-checkbox-row">
           <input id="monster-add-group" type="checkbox" class="form-checkbox" />
-          <label for="monster-add-group" class="form-checkbox-label">Als Gruppe (gemeinsame Initiative, mehrere TP-Pools)</label>
+          <label for="monster-add-group" class="form-checkbox-label" data-i18n="monster_add.as_group">Als Gruppe (gemeinsame Initiative, mehrere TP-Pools)</label>
         </div>
         <div id="monster-add-abilities" class="ability-grid"></div>
         <div class="expanded-sections">
           <div>
-            <p class="expanded-section__title">Rettungswürfe</p>
+            <p class="expanded-section__title" data-i18n="monster_add.saves">Rettungswürfe</p>
             <div id="monster-add-saves" class="expanded-section__body"></div>
           </div>
           <div>
-            <p class="expanded-section__title">Besondere Fähigkeiten</p>
+            <p class="expanded-section__title" data-i18n="monster_add.special">Besondere Fähigkeiten</p>
             <div id="monster-add-special" class="expanded-section__body"></div>
           </div>
           <div>
-            <p class="expanded-section__title">Aktionen</p>
+            <p class="expanded-section__title" data-i18n="monster_add.actions">Aktionen</p>
             <div id="monster-add-actions" class="expanded-section__body"></div>
           </div>
         </div>
         <div id="monster-add-error" class="form-error hidden"></div>
         <div class="modal__actions">
-          <button type="button" id="monster-add-cancel" class="btn--cancel">Abbrechen</button>
-          <button type="submit" class="btn--submit">Zur Initiative hinzufügen</button>
+          <button type="button" id="monster-add-cancel" class="btn--cancel" data-i18n="monster_add.cancel">Abbrechen</button>
+          <button type="submit" class="btn--submit" data-i18n="monster_add.submit">Zur Initiative hinzufügen</button>
         </div>
       </form>
     </div>

@@ -9,7 +9,13 @@
  * Import:
  *   - import(file, core) → parses JSON file and calls core.loadFromExport()
  */
+import { APP_VERSION } from './AppConfig.js';
+
 export class ExportImportManager {
+  constructor(i18n = null) {
+    this.i18n = i18n;
+  }
+
   /**
    * Exports only PC combatants and the current settings.
    * Useful for saving a character party between sessions.
@@ -18,6 +24,7 @@ export class ExportImportManager {
   exportPCs(state) {
     const payload = {
       exportType: 'pcs_only',
+      appVersion: APP_VERSION,
       exportedAt: new Date().toISOString(),
       settings: state.settings,
       combatants: state.combatants
@@ -47,6 +54,7 @@ export class ExportImportManager {
   exportAll(state) {
     const payload = {
       exportType: 'full_combat',
+      appVersion: APP_VERSION,
       exportedAt: new Date().toISOString(),
       round: state.round,
       activeIndex: state.activeIndex,
@@ -66,7 +74,7 @@ export class ExportImportManager {
   importFile(file, core) {
     return new Promise((resolve, reject) => {
       if (!file) {
-        reject(new Error('Keine Datei ausgewählt.'));
+        reject(new Error(this._t('import_export.no_file')));
         return;
       }
 
@@ -75,7 +83,7 @@ export class ExportImportManager {
       const looksLikeJson = fileName.endsWith('.json') || mimeType.includes('json') || mimeType === '';
 
       if (!looksLikeJson) {
-        reject(new Error('Ungültige Datei. Bitte eine .json-Datei hochladen.'));
+        reject(new Error(this._t('import_export.invalid_file')));
         return;
       }
 
@@ -91,7 +99,7 @@ export class ExportImportManager {
           reject(err);
         }
       };
-      reader.onerror = () => reject(new Error('Datei konnte nicht gelesen werden.'));
+      reader.onerror = () => reject(new Error(this._t('import_export.read_failed')));
       reader.readAsText(file);
     });
   }
@@ -106,8 +114,12 @@ export class ExportImportManager {
    * @param {object} data
    */
   _validateImport(data) {
-    if (!data || typeof data !== 'object') throw new Error('Kein gültiges JSON-Objekt.');
-    if (!Array.isArray(data.combatants)) throw new Error('Fehlende "combatants"-Liste im Import.');
+    if (!data || typeof data !== 'object') throw new Error(this._t('import_export.invalid_json'));
+    if (!Array.isArray(data.combatants)) throw new Error(this._t('import_export.missing_combatants'));
+  }
+
+  _t(key, vars = {}) {
+    return this.i18n?.t ? this.i18n.t(key, vars) : key;
   }
 
   /**

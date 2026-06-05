@@ -1,0 +1,182 @@
+{
+  "app": {
+    "title": "Initiative Tracker"
+  },
+  "version": {
+    "badge": "v{version}"
+  },
+  "sidebar": {
+    "meta": "Controls and combat status are now centralized in the main area.",
+    "settings_title": "Settings",
+    "focus": "Focus",
+    "aria": {
+      "collapse": "Collapse sidebar",
+      "expand": "Expand sidebar"
+    }
+  },
+  "settings": {
+    "automation": "Automation",
+    "auto_hp": "Auto HP (use maximum)",
+    "auto_init": "Roll initiative automatically",
+    "naming": "Naming convention (duplicates)",
+    "naming_numeric": "Numeric — Goblin 1, Goblin 2",
+    "naming_alpha": "Alphabetic — Goblin A, Goblin B",
+    "naming_adj": "Adjectives — Swift Goblin, Furious Goblin",
+    "tie_breaker": "Tie-breaker (same initiative)",
+    "tie_name": "Name (alphabetical)",
+    "tie_dex": "Dexterity (descending)",
+    "monster_api": "Monster API",
+    "monster_api_note": "Applies to search and new monster imports.",
+    "system": "Rule system",
+    "system_label": "D&D 5e (2014) — SRD",
+    "system_note": "More systems coming soon.",
+    "language": "Language",
+    "lang_de": "German",
+    "lang_en": "English",
+    "save": "Save"
+  },
+  "footer": {
+    "import": "Import",
+    "export_pcs": "Export PCs only",
+    "export_combat": "Export combat",
+    "open_settings": "Settings",
+    "note": "Initiative Tracker — System Reference Document 5.1 / D&D 5e 2014. Uses dnd5eapi.co and open5e.com as optional monster APIs."
+  },
+  "combat": {
+    "control": "Combat Control",
+    "round": "Round",
+    "start": "Start Combat",
+    "next_turn": "Next Turn",
+    "end": "End Combat",
+    "reset": "Reset",
+    "combatants": "Combatants",
+    "active": "Active",
+    "waiting": "Waiting…",
+    "ready": "Ready",
+    "confirm_reset": "Remove all combatants and reset combat?",
+    "confirm_end_clear": "End combat and remove all monsters/NPCs from initiative?"
+  },
+  "search": {
+    "placeholder": "Search",
+    "no_results": "No monsters found for “{query}”.",
+    "api_unreachable": "API unavailable",
+    "retry": "Try again"
+  },
+  "import_export": {
+    "no_file": "No file selected.",
+    "invalid_file": "Invalid file. Please upload a .json file.",
+    "read_failed": "Could not read file.",
+    "invalid_json": "Invalid JSON object.",
+    "missing_combatants": "Missing \"combatants\" list in import."
+  },
+  "entry": {
+    "add_combatant": "+ Add combatant"
+  },
+  "table": {
+    "eyebrow": "Initiative",
+    "title": "Active order and status",
+    "col_name": "Name",
+    "col_init": "Init",
+    "col_hp": "HP",
+    "col_ac": "AC",
+    "col_pp": "Pass. Per.",
+    "col_actions": "Actions",
+    "empty": "The arena is empty. Add combatants.",
+    "dead_section": "Defeated Combatants",
+    "group_x": "Group x{count}",
+    "pools": "Pools: {count}",
+    "hp_suffix": "HP"
+  },
+  "types": {
+    "sc": "PC",
+    "ally": "Ally",
+    "special": "Special",
+    "monster": "Monster",
+    "npc": "NPC"
+  },
+  "actions": {
+    "details": "Details",
+    "remove": "Remove",
+    "revive": "Revive",
+    "remove_permanent": "Remove permanently",
+    "damage_on": "Apply damage to {name}"
+  },
+  "bottom_nav": {
+    "settings": "Settings",
+    "import": "Import",
+    "pcs": "PCs only",
+    "all": "All"
+  },
+  "privacy": {
+    "text_html": "<strong>Privacy notice:</strong> This app stores game data locally in your browser only (<code class=\"privacy-banner__code\">LocalStorage</code>). No data is sent to servers.",
+    "dismiss": "Understood"
+  },
+  "manual": {
+    "title": "Add combatant",
+    "name": "Name",
+    "type": "Type",
+    "type_sc": "PC",
+    "type_ally": "Ally",
+    "type_monster": "Monster",
+    "type_special": "Special",
+    "initiative": "Initiative",
+    "hp": "Hit Points",
+    "ac": "Armor Class",
+    "pp": "Passive Perception",
+    "cancel": "Cancel",
+    "add": "Add",
+    "error_name": "Please enter a name."
+  },
+  "hp_modal": {
+    "title": "Adjust hit points",
+    "damage": "Damage (subtract)",
+    "heal": "Healing (add)",
+    "current": "Current HP",
+    "max": "Maximum HP",
+    "group_pools": "Group HP pools",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "error_max": "Maximum HP must be greater than 0."
+  },
+  "group_damage": {
+    "title": "Damage to {pool}",
+    "meta": "Current: {hp} HP",
+    "damage": "Damage",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "error_positive": "Please enter a valid positive number.",
+    "pool_label": "Pool {index}"
+  },
+  "monster_add": {
+    "title": "Add monster",
+    "title_prepare": "Prepare {name}",
+    "name": "Name",
+    "count": "Count",
+    "initiative": "Initiative",
+    "hp_per": "HP per monster",
+    "ac": "Armor Class",
+    "pp": "Passive Perception",
+    "as_group": "As group (shared initiative, multiple HP pools)",
+    "saves": "Saving Throws",
+    "special": "Special Abilities",
+    "actions": "Actions",
+    "cancel": "Cancel",
+    "submit": "Add to initiative"
+  },
+  "drawer": {
+    "saving_throws": "Saving Throws",
+    "special": "Special Abilities",
+    "actions": "Actions",
+    "legendary": "Legendary Actions",
+    "fallback_initiative": "Initiative",
+    "fallback_max_hp": "Max HP",
+    "fallback_ac": "Armor Class",
+    "fallback_pp": "Passive Perception"
+  },
+  "errors": {
+    "import_failed": "Import failed: {message}"
+  },
+  "common": {
+    "none": "—"
+  }
+}

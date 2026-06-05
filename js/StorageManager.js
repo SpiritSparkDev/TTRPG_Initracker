@@ -6,6 +6,7 @@
 export class StorageManager {
   static KEY = 'ini_tracker_state';
   static PRIVACY_KEY = 'ini_tracker_privacy_dismissed';
+  static LANGUAGE_KEY = 'ini_tracker_language';
 
   /**
    * Persists the full application state.
@@ -46,5 +47,15 @@ export class StorageManager {
   /** Marks the privacy banner as dismissed. */
   static dismissPrivacy() {
     localStorage.setItem(StorageManager.PRIVACY_KEY, '1');
+  }
+
+  /** Returns the persisted UI language code, e.g. "de" or "en". */
+  static getLanguage() {
+    return localStorage.getItem(StorageManager.LANGUAGE_KEY);
+  }
+
+  /** Persists the selected UI language code. */
+  static setLanguage(lang) {
+    localStorage.setItem(StorageManager.LANGUAGE_KEY, String(lang || ''));
   }
 }

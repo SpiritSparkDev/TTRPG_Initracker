@@ -28,6 +28,7 @@ export class CombatTrackerCore {
     tieBreaker: 'name', // 'name' | 'dexterity'
     system: 'dnd5e2014',
     monsterApi: 'dnd5eapi', // 'dnd5eapi' | 'open5e'
+    language: null,
   };
 
   constructor() {

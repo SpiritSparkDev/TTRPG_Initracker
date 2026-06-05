@@ -13,7 +13,7 @@ export class UIManager {
    * @param {import('./CombatTrackerCore.js').CombatTrackerCore} core
    * @param {import('./SystemAdapter5e.js').SystemAdapter5e} adapter
    * @param {import('./ExportImportManager.js').ExportImportManager} exportMgr
-   * @param {{ resolveAdapter?: (source: string) => any, onSettingsSaved?: (settings: object) => void }} [options]
+  * @param {{ resolveAdapter?: (source: string) => any, onSettingsSaved?: (settings: object) => void, i18n?: any }} [options]
    */
   constructor(core, adapter, exportMgr, options = {}) {
     this.core = core;
@@ -25,6 +25,7 @@ export class UIManager {
     this._onSettingsSaved = typeof options.onSettingsSaved === 'function'
       ? options.onSettingsSaved
       : null;
+    this.i18n = options.i18n || null;
 
     this._searchDebounceTimer = null;
     this._monsterPreviewData = null;
@@ -46,7 +47,7 @@ export class UIManager {
       if (this.core.isCombatActive) this.core.nextTurn();
     });
     this._on('reset-btn', 'click', () => {
-      if (confirm('Alle Kombattanten entfernen und den Kampf zurücksetzen?')) {
+      if (confirm(this._t('combat.confirm_reset'))) {
         this.core.reset();
       }
     });
@@ -175,6 +176,7 @@ export class UIManager {
    * @param {object} state - AppState from CombatTrackerCore
    */
   render(state) {
+    this.i18n?.applyToDocument();
     this._renderStats(state);
     this._renderList(state);
     this._renderStartButton(state);
@@ -187,11 +189,11 @@ export class UIManager {
     this._setText('stat-round', roundText);
     this._setText('stat-total', String(state.combatants.length));
 
-    let activeName = 'Warte…';
+    let activeName = this._t('combat.waiting');
     if (state.isCombatActive && state.activeIndex >= 0 && state.combatants[state.activeIndex]) {
       activeName = state.combatants[state.activeIndex].name;
     } else if (state.combatants.length > 0 && !state.isCombatActive) {
-      activeName = 'Bereit';
+      activeName = this._t('combat.ready');
     }
     this._setText('stat-active', activeName);
   }
@@ -246,7 +248,7 @@ export class UIManager {
 
     if (deadEntries.length > 0) {
       if (livingEntries.length > 0) {
-        html.push(this._buildSectionRow('Gefallene Kombatanten'));
+        html.push(this._buildSectionRow(this._t('table.dead_section')));
       }
       html.push(...deadEntries.map(({ c, idx }) => this._buildRow(c, idx, state)));
     }
@@ -286,14 +288,14 @@ export class UIManager {
       c.isGroup ? 'initiative-row--group' : '',
     ].filter(Boolean).join(' ');
     const typeLabel = c.isGroup
-      ? `Gruppe x${c.groupCount}`
+      ? this._t('table.group_x', { count: c.groupCount })
       : (combatantType === 'sc'
-        ? 'SC'
+        ? this._t('types.sc')
         : combatantType === 'ally'
-          ? 'Verbündete'
+          ? this._t('types.ally')
           : combatantType === 'special'
-            ? 'Spezial'
-            : (c.monsterIndex ? 'Monster' : 'NSC'));
+            ? this._t('types.special')
+            : (c.monsterIndex ? this._t('types.monster') : this._t('types.npc')));
     const typeBadgeClass = combatantType === 'ally'
       ? 'type-badge type-badge--ally'
       : combatantType === 'special'
@@ -312,10 +314,10 @@ export class UIManager {
               data-pool-index="${poolIdx}"
               data-pool-name="${this._esc(poolName)}"
               class="group-pool ${pool <= 0 ? 'group-pool--dead' : ''}"
-              title="Schaden auf ${this._esc(poolName)} anwenden"
+              title="${this._esc(this._t('actions.damage_on', { name: poolName }))}"
             >
               <span class="group-pool__name">${this._esc(poolName)}</span>
-              <span class="group-pool__hp">${pool} TP</span>
+              <span class="group-pool__hp">${pool} ${this._esc(this._t('table.hp_suffix'))}</span>
             </button>
           `;
         }).join('')
@@ -353,7 +355,7 @@ export class UIManager {
                 readonly
                 class="hp-input"
               />
-              <span class="hp-max">/ ${c.maxHp}${c.isGroup ? ` (Pools: ${c.groupCount})` : ''}</span>
+              <span class="hp-max">/ ${c.maxHp}${c.isGroup ? ` (${this._esc(this._t('table.pools', { count: c.groupCount }))})` : ''}</span>
               <button data-action="hp-plus" data-id="${c.id}" data-delta="1"
                 class="hp-btn hp-btn--plus">+</button>
             </div>
@@ -369,21 +371,21 @@ export class UIManager {
           <div class="action-btns">
             ${c.monsterIndex ? `
             <button data-action="show-details" data-id="${c.id}"
-              class="action-btn" title="Details">
+              class="action-btn" title="${this._esc(this._t('actions.details'))}">
               <span class="material-symbols-outlined">info</span>
             </button>
             ` : ''}
             <button data-action="remove" data-id="${c.id}"
-              class="action-btn action-btn--danger" title="Entfernen">
+              class="action-btn action-btn--danger" title="${this._esc(this._t('actions.remove'))}">
               <span class="material-symbols-outlined">delete</span>
             </button>
             ${isDead ? `
             <button data-action="revive" data-id="${c.id}"
-              class="action-btn" title="Wiederbeleben">
+              class="action-btn" title="${this._esc(this._t('actions.revive'))}">
               <span class="material-symbols-outlined">favorite</span>
             </button>
             <button data-action="remove-dead" data-id="${c.id}"
-              class="action-btn action-btn--danger" title="Endgültig entfernen">
+              class="action-btn action-btn--danger" title="${this._esc(this._t('actions.remove_permanent'))}">
               <span class="material-symbols-outlined">delete_forever</span>
             </button>
             ` : ''}
@@ -422,24 +424,24 @@ export class UIManager {
         </div>
         <div class="drawer-sections">
           <div>
-            <p class="drawer-section__title">Rettungswürfe</p>
+            <p class="drawer-section__title">${this._esc(this._t('drawer.saving_throws'))}</p>
             <div class="drawer-section__body">${savingThrows}</div>
           </div>
           <div>
-            <p class="drawer-section__title">Besondere Fähigkeiten</p>
+            <p class="drawer-section__title">${this._esc(this._t('drawer.special'))}</p>
             <div class="drawer-section__body">
-              ${(m.special_abilities || []).map(a => `<p><strong>${this._esc(a.name)}.</strong> ${this._esc(a.desc)}</p>`).join('') || '<p class="stat-desc">—</p>'}
+              ${(m.special_abilities || []).map(a => `<p><strong>${this._esc(a.name)}.</strong> ${this._esc(a.desc)}</p>`).join('') || `<p class="stat-desc">${this._esc(this._t('common.none'))}</p>`}
             </div>
           </div>
           <div>
-            <p class="drawer-section__title">Aktionen</p>
+            <p class="drawer-section__title">${this._esc(this._t('drawer.actions'))}</p>
             <div class="drawer-section__body">
-              ${(m.actions || []).map(a => `<p><strong>${this._esc(a.name)}.</strong> ${this._esc(a.desc)}</p>`).join('') || '<p class="stat-desc">—</p>'}
+              ${(m.actions || []).map(a => `<p><strong>${this._esc(a.name)}.</strong> ${this._esc(a.desc)}</p>`).join('') || `<p class="stat-desc">${this._esc(this._t('common.none'))}</p>`}
             </div>
           </div>
           ${m.legendary_actions?.length ? `
           <div>
-            <p class="drawer-section__title">Legendäre Aktionen</p>
+            <p class="drawer-section__title">${this._esc(this._t('drawer.legendary'))}</p>
             <div class="drawer-section__body">
               ${m.legendary_actions.map(a => `<p><strong>${this._esc(a.name)}.</strong> ${this._esc(a.desc)}</p>`).join('')}
             </div>
@@ -449,10 +451,10 @@ export class UIManager {
     } else {
       content.innerHTML = `
         <div class="drawer-fallback">
-          <p><strong>Initiative:</strong> ${c.initiative}</p>
-          <p><strong>Max. TP:</strong> ${c.maxHp}</p>
-          <p><strong>Rüstungsklasse:</strong> ${c.ac}</p>
-          <p><strong>Passive Wahrnehmung:</strong> ${c.passivePerception}</p>
+          <p><strong>${this._esc(this._t('drawer.fallback_initiative'))}:</strong> ${c.initiative}</p>
+          <p><strong>${this._esc(this._t('drawer.fallback_max_hp'))}:</strong> ${c.maxHp}</p>
+          <p><strong>${this._esc(this._t('drawer.fallback_ac'))}:</strong> ${c.ac}</p>
+          <p><strong>${this._esc(this._t('drawer.fallback_pp'))}:</strong> ${c.passivePerception}</p>
         </div>`;
     }
 
@@ -474,7 +476,7 @@ export class UIManager {
     const title = document.getElementById('modal-title');
     document.getElementById('manual-form')?.reset();
     document.getElementById('modal-error')?.classList.add('hidden');
-    title.textContent = 'Kombattant hinzufügen';
+    title.textContent = this._t('manual.title');
     const typeSelect = document.getElementById('m-combatant-type');
     if (typeSelect) typeSelect.value = 'sc';
     overlay.classList.add('is-open');
@@ -492,7 +494,7 @@ export class UIManager {
     const errorEl = document.getElementById('modal-error');
     if (!name) {
       if (errorEl) {
-        errorEl.textContent = 'Bitte einen Namen eingeben.';
+        errorEl.textContent = this._t('manual.error_name');
         errorEl.classList.remove('hidden');
       }
       return;
@@ -527,6 +529,8 @@ export class UIManager {
     if (monsterApiSelect) monsterApiSelect.value = s.monsterApi || 'dnd5eapi';
     const tieBreakerSelect = document.getElementById('setting-tie-breaker');
     if (tieBreakerSelect) tieBreakerSelect.value = s.tieBreaker || 'name';
+    const langSelect = document.getElementById('setting-language');
+    if (langSelect) langSelect.value = s.language || this.i18n?.lang || 'de';
   }
 
   _openSettings() {
@@ -553,7 +557,9 @@ export class UIManager {
     if (!toggle) return;
 
     toggle.setAttribute('aria-expanded', String(!this._isSidebarCollapsed));
-    toggle.setAttribute('aria-label', this._isSidebarCollapsed ? 'Sidebar ausklappen' : 'Sidebar einklappen');
+    toggle.setAttribute('aria-label', this._isSidebarCollapsed
+      ? this._t('sidebar.aria.expand')
+      : this._t('sidebar.aria.collapse'));
 
     const icon = toggle.querySelector('.material-symbols-outlined');
     if (icon) {
@@ -561,17 +567,23 @@ export class UIManager {
     }
   }
 
-  _saveSettings() {
+  async _saveSettings() {
     const naming = document.getElementById('setting-naming-convention')?.value || 'numeric';
+    const language = document.getElementById('setting-language')?.value || this.i18n?.lang || 'de';
     const settingsPatch = {
       autoHp: document.getElementById('setting-auto-hp')?.checked ?? true,
       autoInitiative: document.getElementById('setting-auto-init')?.checked ?? true,
       namingConvention: naming,
       tieBreaker: document.getElementById('setting-tie-breaker')?.value || 'name',
       monsterApi: document.getElementById('setting-monster-api')?.value || 'dnd5eapi',
+      language,
     };
     this.core.updateSettings(settingsPatch);
+    if (this.i18n && this.i18n.lang !== language) {
+      await this.i18n.setLanguage(language);
+    }
     if (this._onSettingsSaved) this._onSettingsSaved(this.core.settings);
+    this.render(this.core.getState());
   }
 
   // ---------------------------------------------------------------------------
@@ -603,7 +615,7 @@ export class UIManager {
     if (!box) return;
     if (results.length === 0) {
       if (query.length >= 3) {
-        box.innerHTML = `<div class="search-no-results">Keine Monster gefunden für „${this._esc(query)}".</div>`;
+        box.innerHTML = `<div class="search-no-results">${this._esc(this._t('search.no_results', { query }))}</div>`;
         box.classList.remove('hidden');
       } else {
         box.classList.add('hidden');
@@ -631,9 +643,9 @@ export class UIManager {
     if (!box) return;
     box.innerHTML = `
       <div class="search-error">
-        <p class="search-error__title">API nicht erreichbar</p>
+        <p class="search-error__title">${this._esc(this._t('search.api_unreachable'))}</p>
         <p class="search-error__msg">${this._esc(message)}</p>
-        <button id="search-retry-btn" class="search-retry-btn">Erneut versuchen</button>
+        <button id="search-retry-btn" class="search-retry-btn">${this._esc(this._t('search.retry'))}</button>
       </div>
     `;
     box.classList.remove('hidden');
@@ -715,15 +727,15 @@ export class UIManager {
     const poolIndex = Number(poolIndexRaw);
     if (!Number.isInteger(poolIndex) || poolIndex < 0 || poolIndex >= c.hpPools.length) return;
 
-    const poolName = poolNameRaw || `Pool ${poolIndex + 1}`;
+    const poolName = poolNameRaw || this._t('group_damage.pool_label', { index: poolIndex + 1 });
     const currentHp = Math.max(0, Number(c.hpPools[poolIndex]) || 0);
 
     this._groupPoolDamageContext = { id, poolIndex };
     const title = document.getElementById('group-pool-damage-title');
-    if (title) title.textContent = `Schaden auf ${poolName}`;
+    if (title) title.textContent = this._t('group_damage.title', { pool: poolName });
 
     const meta = document.getElementById('group-pool-damage-meta');
-    if (meta) meta.textContent = `Aktuell: ${currentHp} TP`;
+    if (meta) meta.textContent = this._t('group_damage.meta', { hp: currentHp });
 
     const amount = document.getElementById('group-pool-damage-amount');
     if (amount) amount.value = '0';
@@ -753,7 +765,7 @@ export class UIManager {
     const damage = Number(amountEl?.value);
     if (!Number.isFinite(damage) || damage < 0) {
       if (errorEl) {
-        errorEl.textContent = 'Bitte eine gültige positive Zahl eingeben.';
+        errorEl.textContent = this._t('group_damage.error_positive');
         errorEl.classList.remove('hidden');
       }
       return;
@@ -780,7 +792,7 @@ export class UIManager {
       poolsWrap.classList.remove('hidden');
       poolsGrid.innerHTML = c.hpPools.map((pool, idx) => `
         <div class="hp-pool-item">
-          <label class="hp-pool-item__label" for="hp-pool-${idx}">Pool ${idx + 1}</label>
+          <label class="hp-pool-item__label" for="hp-pool-${idx}">${this._esc(this._t('group_damage.pool_label', { index: idx + 1 }))}</label>
           <input id="hp-pool-${idx}" type="number" min="0" value="${pool}" class="form-input form-input--mono" data-pool-index="${idx}" />
         </div>
       `).join('');
@@ -810,7 +822,7 @@ export class UIManager {
 
     if (max <= 0) {
       if (errorEl) {
-        errorEl.textContent = 'Maximale TP müssen größer als 0 sein.';
+        errorEl.textContent = this._t('hp_modal.error_max');
         errorEl.classList.remove('hidden');
       }
       return;
@@ -846,7 +858,7 @@ export class UIManager {
     const partial = this.adapter.buildCombatantFromMonster(monsterData, this.core.settings);
 
     document.getElementById('monster-add-index').value = monsterData.index;
-    document.getElementById('monster-add-title').textContent = `${monsterData.name} vorbereiten`;
+    document.getElementById('monster-add-title').textContent = this._t('monster_add.title_prepare', { name: monsterData.name });
     document.getElementById('monster-add-name').value = partial.nameBase;
     document.getElementById('monster-add-count').value = '1';
     document.getElementById('monster-add-init').value = String(partial.initiative);
@@ -869,10 +881,10 @@ export class UIManager {
 
     const special = (monsterData.special_abilities || []).map(a =>
       `<p><span class="stat-name">${this._esc(a.name)}.</span> <span class="stat-desc">${this._esc(a.desc)}</span></p>`
-    ).join('') || '<p class="stat-desc">—</p>';
+    ).join('') || `<p class="stat-desc">${this._esc(this._t('common.none'))}</p>`;
     const actions = (monsterData.actions || []).map(a =>
       `<p><span class="stat-name">${this._esc(a.name)}.</span> <span class="stat-desc">${this._esc(a.desc)}</span></p>`
-    ).join('') || '<p class="stat-desc">—</p>';
+    ).join('') || `<p class="stat-desc">${this._esc(this._t('common.none'))}</p>`;
     const saves = this._buildSavingThrowsHtml(monsterData);
 
     document.getElementById('monster-add-saves').innerHTML = saves;
@@ -928,7 +940,7 @@ export class UIManager {
 
   _endCombatAndClearMonsters() {
     if (this.core.combatants.length === 0) return;
-    if (!confirm('Kampf beenden und alle Monster/NSCs aus der Initiative entfernen?')) return;
+    if (!confirm(this._t('combat.confirm_end_clear'))) return;
     this.core.endCombatAndRemoveMonsters();
     this._closeDrawer();
   }
@@ -965,7 +977,7 @@ export class UIManager {
     try {
       await this.exportMgr.importFile(file, this.core);
     } catch (err) {
-      alert(`Import fehlgeschlagen: ${err.message}`);
+      alert(this._t('errors.import_failed', { message: err.message }));
     }
     // Reset file input so the same file can be re-imported
     document.getElementById('import-file-input').value = '';
@@ -1009,8 +1021,12 @@ export class UIManager {
         return `${stat} ${value >= 0 ? '+' : ''}${value}`;
       });
 
-    if (saveRows.length === 0) return '<p class="stat-desc">—</p>';
+    if (saveRows.length === 0) return `<p class="stat-desc">${this._esc(this._t('common.none'))}</p>`;
     return `<p class="stat-desc">${saveRows.join(', ')}</p>`;
+  }
+
+  _t(key, vars = {}) {
+    return this.i18n?.t ? this.i18n.t(key, vars) : key;
   }
 
   /**
